@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">名刺管理</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+
+    <!-- 属性名 -->
+    <string name="kind_access_date">連絡日</string>
+    <string name="kind_create_date">登録日</string>
+    <string name="kind_update_date">更新日</string>
+    <string name="kind_company">企業名</string>
+    <string name="kind_organization">部署</string>
+    <string name="kind_position">役職</string>
+    <string name="kind_name">氏名</string>
+    <string name="kind_kana">かな</string>
+    <string name="kind_address">住所</string>
+    <string name="kind_tel">電話</string>
+    <string name="kind_mobile">携帯</string>
+    <string name="kind_fax">FAX</string>
+    <string name="kind_email">EMail</string>
+    <string name="kind_web">URL</string>
+    <string name="kind_notes">備考</string>
+    <string name="kind_image_url">画像</string>
+
+    <!-- Information message -->
+    <string name="info_register">&lt;img src="ic_menu_add" /&gt;ボタンで名刺の新規登録ができます。</string>
+    <string name="info_camera">&lt;img src="ic_menu_camera" /&gt;ボタンで名刺を撮影し入力文字を自動認識できます。</string>
+    <string name="info_after_auto_setup">自動認識できなかった項目は&lt;img src="window" /&gt;ボタンで画像から入力文字を範囲選択できます。</string>
+    <string name="info_select_chars">文字を選択してから&lt;img src="ic_menu_edit" /&gt;ボタンで編集画面に戻ってください。</string>
+
+    <!-- Progress message -->
+    <string name="prog_ocr_1">画像から文字を検出しています…</string>
+    <string name="prog_ocr_2">文字列を識別しています…</string>
+    <string name="prog_ocr_3">%sを識別しています…</string>
+
+</resources>

@@ -1,0 +1,27 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content" >
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="60sp"
+        android:layout_height="wrap_content"
+        android:text="@string/kind_company" />
+
+    <EditText
+        android:id="@+id/edit"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:inputType="none" />
+
+    <ImageView
+        android:contentDescription="@null"
+        android:id="@+id/search"
+        android:padding="3dp"
+        android:layout_width="26dp"
+        android:layout_height="26dp"
+        android:layout_gravity="center"
+        android:src="@drawable/window" />
+
+</LinearLayout>

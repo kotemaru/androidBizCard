@@ -1,0 +1,51 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="72sp"
+    android:padding="4dp" >
+
+    <ImageView
+        android:id="@+id/thumbnail"
+        android:layout_width="72sp"
+        android:layout_height="72sp"
+        android:src="@android:drawable/ic_menu_camera" />
+
+    <TextView
+        android:id="@+id/company"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@+id/thumbnail"
+        android:text="campany"
+        android:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/position"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="20sp"
+        android:layout_toRightOf="@+id/campany"
+        android:text="position"
+        android:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="24sp"
+        android:layout_toRightOf="@+id/thumbnail"
+        android:text="Name"
+        android:textSize="20sp" />
+
+    <TextView
+        android:id="@+id/option"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:text="option"
+        android:textSize="10sp" />
+
+</RelativeLayout>

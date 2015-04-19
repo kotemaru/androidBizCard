@@ -1,0 +1,90 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content" >
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/buttons"
+        android:padding="4dp" >
+
+        <LinearLayout
+            android:id="@+id/items"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+            <include
+                android:id="@+id/company"
+                layout="@layout/activity_edit_item" />
+
+            <include
+                android:id="@+id/organization"
+                layout="@layout/activity_edit_item" />
+
+            <include
+                android:id="@+id/position"
+                layout="@layout/activity_edit_item" />
+
+            <include
+                android:id="@+id/name"
+                layout="@layout/activity_edit_item" />
+
+            <include
+                android:id="@+id/kana"
+                layout="@layout/activity_edit_item" />
+
+            <include
+                android:id="@+id/address"
+                layout="@layout/activity_edit_item" />
+
+            <include
+                android:id="@+id/tel"
+                layout="@layout/activity_edit_item" />
+
+            <include
+                android:id="@+id/mobile"
+                layout="@layout/activity_edit_item" />
+
+            <include
+                android:id="@+id/fax"
+                layout="@layout/activity_edit_item" />
+
+            <include
+                android:id="@+id/email"
+                layout="@layout/activity_edit_item" />
+
+            <include
+                android:id="@+id/web"
+                layout="@layout/activity_edit_item" />
+
+            <include
+                android:id="@+id/notes"
+                layout="@layout/activity_edit_item" />
+        </LinearLayout>
+    </ScrollView>
+
+    <LinearLayout
+        android:id="@+id/buttons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true" >
+
+        <Button
+            android:onClick="onClickCancel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="キャンセル" />
+
+        <Button
+            android:onClick="onClickOk"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="登録" />
+    </LinearLayout>
+
+</RelativeLayout>
