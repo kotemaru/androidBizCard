@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.kotemaru.android.bizcard.MyApplication;
 import org.kotemaru.android.bizcard.R;
 import org.kotemaru.android.bizcard.model.CardModel;
 import org.kotemaru.android.bizcard.model.CardModel.Kind;
@@ -40,30 +39,31 @@ public class CaptureAutoSetup {
 
 	private void updateProgress(Kind kind) {
 		if (kind.labelResId == 0) return;
-		Log.i("DEBUG","updateProgress:"+kind);
+		Log.i("DEBUG", "updateProgress:" + kind);
 		String msg = mContext.getString(R.string.prog_ocr_3, mContext.getString(kind.labelResId));
 		mDialogModel.setProgress(msg, false, null);
-		MyApplication.getInstance().updateCurrentActivity();
+		// MyApplication.getInstance().updateCurrentActivity();
 	}
 
-	public CardModel getAutoSetupCardModel(Context context, Bitmap bitmap, List<WordInfo> words, List<WordInfo> ewords, String etext) throws IOException {
+	public CardModel getAutoSetupCardModel(Context context, Bitmap bitmap, List<WordInfo> words, List<WordInfo> ewords,
+			String etext) throws IOException {
 		mBitmap = bitmap;
 		mBaseWords = words;
 		mBaseEngWords = ewords;
 		mEText = etext;
 		setupCampany();
-        setupOrganization();
-        setupPosition();
-        setupAddress();
-        setupEMail();
-        setupTel();
-        setupWeb();
-        setupName();
+		setupOrganization();
+		setupPosition();
+		setupAddress();
+		setupEMail();
+		setupTel();
+		setupWeb();
+		setupName();
 		return mCardModel;
 	}
 
 	private String getBestString(WordInfo winfo) {
-		Log.e("DEBUG","===>getBestString:"+winfo.rect);
+		Log.e("DEBUG", "===>getBestString:" + winfo.rect);
 		try {
 			winfo = OCRUtil.getBestString(mContext, mBitmap, winfo.rect);
 			return winfo.word.replaceAll("[ \t\n]", "");
@@ -71,8 +71,8 @@ public class CaptureAutoSetup {
 			e.printStackTrace();
 			return null;
 		} catch (IllegalArgumentException e) {
-			//e.printStackTrace();
-			Log.e("DEBUG","===>getBestString:"+e+":"+winfo.rect);
+			// e.printStackTrace();
+			Log.e("DEBUG", "===>getBestString:" + e + ":" + winfo.rect);
 			return winfo.word;
 		}
 	}
@@ -80,7 +80,7 @@ public class CaptureAutoSetup {
 	private void setupCampany() {
 		Kind kind = Kind.COMPANY;
 		updateProgress(kind);
-		WordInfo winfo = searchKeyword("株式","有限","会社","会ネ士","会ネ土", "㈱", "㈲");
+		WordInfo winfo = searchKeyword("株式", "有限", "会社", "会ネ士", "会ネ土", "㈱", "㈲");
 		if (winfo == null) return;
 		winfo = getLineWord(winfo);
 		mCardModel.put(kind, getBestString(winfo));
@@ -153,8 +153,8 @@ public class CaptureAutoSetup {
 				return org.replace('®', '@').replace('©', '@');
 			}
 		};
-		//String word = searchPattern(prepro, EMAIL_PATTERN);
-		//if (word == null) return;
+		// String word = searchPattern(prepro, EMAIL_PATTERN);
+		// if (word == null) return;
 		String text = prepro.preprocess(mEText);
 		Matcher m = EMAIL_PATTERN.matcher(text);
 		if (m.find()) {
@@ -180,9 +180,9 @@ public class CaptureAutoSetup {
 	private void setupTel() {
 		Kind kind = Kind.TEL;
 		updateProgress(kind);
-		//List<String> words = searchPatterns(sTelPreprocessor, TEL_PATTERN);
-		//if (words.isEmpty()) return;
-		//for (String word : words) {
+		// List<String> words = searchPatterns(sTelPreprocessor, TEL_PATTERN);
+		// if (words.isEmpty()) return;
+		// for (String word : words) {
 		String text = sTelPreprocessor.preprocess(mEText);
 		Matcher m = TEL_PATTERN.matcher(text);
 		while (m.find()) {
@@ -202,6 +202,7 @@ public class CaptureAutoSetup {
 	private static final Pattern URL_PATTERN =
 			Pattern.compile("(http://|https://){1}[\\w\\.\\-/:\\#\\?\\=\\&\\;\\%\\~\\+]+",
 					Pattern.CASE_INSENSITIVE);
+
 	private void setupWeb() {
 		Kind kind = Kind.WEB;
 		updateProgress(kind);
@@ -210,14 +211,11 @@ public class CaptureAutoSetup {
 		mCardModel.put(kind, word);
 	}
 
-
-
-
 	// -----------------------------------
 	private WordInfo searchKeyword(String... keywords) {
 		for (String kw : keywords) {
 			for (WordInfo winfo : mBaseWords) {
-				//Log.e("DEBUG","searchKeyword:"+kw+":"+winfo.word);
+				// Log.e("DEBUG","searchKeyword:"+kw+":"+winfo.word);
 				if (winfo.word.indexOf(kw) >= 0) return winfo;
 			}
 		}
@@ -251,18 +249,18 @@ public class CaptureAutoSetup {
 			sbuf.append(winfo.word);
 			rect.union(winfo.rect);
 			confidence += winfo.confidence;
-			Log.e("DEBUG","getLineWord:"+winfo.rect+"=>"+rect);
+			Log.e("DEBUG", "getLineWord:" + winfo.rect + "=>" + rect);
 		}
 		confidence = confidence / list.size();
 		return new WordInfo(rect, sbuf.toString(), confidence);
 	}
 	private boolean isNear(Rect base, int charLen, Rect tgt) {
-		int baseY = base.top + base.height()/2;
-		int tgtY = tgt.top + tgt.height()/2;
+		int baseY = base.top + base.height() / 2;
+		int tgtY = tgt.top + tgt.height() / 2;
 		if (!nearlyEqueal(base.height(), baseY, tgt.height(), tgtY)) return false;
-		int space = base.width()/charLen * 2;
-		if (tgt.right < base.left-space) return false;
-		if (base.right+space < tgt.left) return false;
+		int space = base.width() / charLen * 2;
+		if (tgt.right < base.left - space) return false;
+		if (base.right + space < tgt.left) return false;
 		return true;
 	}
 
@@ -311,7 +309,7 @@ public class CaptureAutoSetup {
 			String word = winfo.word;
 			if (proprocessor != null) word = proprocessor.preprocess(word);
 			for (Pattern patt : patterns) {
-				Log.e("DEBUG","searchPattern:"+patt+":"+word);
+				Log.e("DEBUG", "searchPattern:" + patt + ":" + word);
 				Matcher m = patt.matcher(word);
 				if (m.find()) {
 					return word.substring(m.start(), m.end());
@@ -320,6 +318,5 @@ public class CaptureAutoSetup {
 		}
 		return null;
 	}
-
 
 }

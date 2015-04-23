@@ -10,6 +10,7 @@ import org.kotemaru.android.bizcard.model.CardModel.Kind;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.util.Log;
 
 public class Launcher {
@@ -39,7 +40,7 @@ public class Launcher {
 	public static void startCamera(Activity context) {
 		Log.d(TAG, "startCamera");
 		Intent intent = new Intent(context, CameraActivity.class);
-		intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
+		// intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
 		context.startActivityForResult(intent, CAMERA_REQUEST_CODE);
 	}
 
@@ -74,5 +75,24 @@ public class Launcher {
 
 	public static void startEditor(Context context) {
 		startEditor(context, ExtraValue.NIL, -1);
+	}
+
+	public static void startDialer(Context context, String tel) {
+		Uri uri = Uri.parse("tel:" + tel);
+		Intent intent = new Intent(Intent.ACTION_DIAL, uri);
+		context.startActivity(intent);
+	}
+
+	public static void startMailer(Context context, String email) {
+		Intent intent = new Intent();
+		intent.setAction(Intent.ACTION_SEND);
+		intent.setType("message/rfc822");
+		intent.putExtra(Intent.EXTRA_EMAIL, new String[] { email });
+		context.startActivity(intent);
+	}
+	public static void startBrowser(Context context, String url) {
+		Uri uri = Uri.parse(url);
+		Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+		context.startActivity(intent);
 	}
 }

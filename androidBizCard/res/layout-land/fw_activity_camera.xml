@@ -4,6 +4,7 @@
     android:orientation="horizontal">"
 
     <FrameLayout
+        android:background="#000000"
         android:layout_height="match_parent"
         android:layout_width="0dp"
         android:layout_weight="1" >
@@ -11,14 +12,14 @@
         <SurfaceView
             android:id="@+id/preview"
             android:layout_gravity="center"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
 
-        <SurfaceView
+        <org.kotemaru.android.bizcard.widget.OverlaySurfaceView
             android:id="@+id/overlay"
             android:layout_gravity="center"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
     </FrameLayout>
 
     <ImageView
@@ -27,6 +28,7 @@
         android:layout_width="60dp"
         android:contentDescription="@null"
         android:padding="10dp"
+        android:background="#444444"
         android:src="@android:drawable/ic_menu_camera" />
 
 </LinearLayout>

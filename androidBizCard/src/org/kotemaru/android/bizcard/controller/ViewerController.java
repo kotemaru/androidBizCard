@@ -6,11 +6,10 @@ import org.kotemaru.android.bizcard.model.CardHolderActivtyModel;
 import org.kotemaru.android.bizcard.model.CardModel;
 import org.kotemaru.android.delegatehandler.annotation.GenerateDelegateHandler;
 import org.kotemaru.android.delegatehandler.annotation.Handle;
-import org.kotemaru.android.fw.FwControllerBase;
 import org.kotemaru.android.fw.thread.ThreadManager;
 
 @GenerateDelegateHandler
-public class ViewerController extends FwControllerBase<MyApplication> {
+public class ViewerController extends BaseController {
 	public final ViewerControllerHandler mHandler;
 	public final CardHolderActivtyModel mModel;
 
@@ -22,7 +21,7 @@ public class ViewerController extends FwControllerBase<MyApplication> {
 
 	@Handle(thread = ThreadManager.WORKER)
 	void loadCard(int id) {
-		CardDb db = getApplication().getCardDb();
+		CardDb db = getFwApplication().getCardDb();
 		CardModel model = db.getCardModel(id);
 		mModel.setCardModelLocked(model);
 	}

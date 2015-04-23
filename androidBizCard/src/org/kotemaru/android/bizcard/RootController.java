@@ -6,7 +6,6 @@ import org.kotemaru.android.bizcard.controller.EditorController;
 import org.kotemaru.android.bizcard.controller.ViewerController;
 import org.kotemaru.android.fw.FwControllerBase;
 
-
 public class RootController extends FwControllerBase<MyApplication> {
 	private final CaptureController mCaptureController;
 	private final CardListController mCardListController;

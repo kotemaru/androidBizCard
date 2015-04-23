@@ -1,5 +1,6 @@
 package org.kotemaru.android.bizcard.activity;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,6 +14,7 @@ import org.kotemaru.android.bizcard.database.CardDb;
 import org.kotemaru.android.bizcard.model.CardHolderActivtyModel;
 import org.kotemaru.android.bizcard.model.CardModel;
 import org.kotemaru.android.bizcard.model.CardModel.Kind;
+import org.kotemaru.android.bizcard.util.CardImageUtil;
 import org.kotemaru.android.fw.FwActivity;
 
 import android.content.Intent;
@@ -43,6 +45,7 @@ public class EditorActivity extends BaseActivity<CardHolderActivtyModel> impleme
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_editor);
+		setTitle(R.string.title_editor);
 		MyApplication app = MyApplication.getInstance();
 		mModel = app.getModel().getCardHolderModel();
 		mController = app.getController().getEditorController();
@@ -78,9 +81,13 @@ public class EditorActivity extends BaseActivity<CardHolderActivtyModel> impleme
 		switch (editorMode) {
 		case INIT:
 			Log.i(TAG, "onResume:reset data");
-			mModel.setCardModel(null);
 			mCurrentCardId = intent.getExtras().getInt(Launcher.ExtraKey.ID.name());
-			mController.mHandler.loadCard(mCurrentCardId);
+			if (mCurrentCardId == -1) {
+				mModel.getDialogModel().setInformationIfRequire(this, R.string.info_editor_camera);
+				mModel.setCardModel(new CardModel());
+			} else {
+				mController.mHandler.loadCard(mCurrentCardId);
+			}
 			break;
 		case AUTO_SETUP:
 			mModel.getDialogModel().setInformationIfRequire(this, R.string.info_after_auto_setup);
@@ -88,6 +95,12 @@ public class EditorActivity extends BaseActivity<CardHolderActivtyModel> impleme
 		default:
 			break;
 		}
+	}
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+		saveTextView(mModel.getCardModel());
 	}
 
 	@Override
@@ -99,21 +112,37 @@ public class EditorActivity extends BaseActivity<CardHolderActivtyModel> impleme
 		return createOptionsMenu(menu, MenuItemType.CAMERA);
 	}
 	@Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
-    	if (requestCode == Launcher.CAMERA_REQUEST_CODE) {
-    		//byte[] data = CameraActivity.takePictureData();
-    		//Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
-    		Bitmap bitmap = CameraActivity.takePictureBitmap();
-    		MyApplication.getInstance().getModel().getCaptureModel().setCardBitmap(bitmap);
-    		Launcher.startCapture(this);
-    	}
-    }
+	protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+		Log.i(TAG, "onActivityResult:" + requestCode + "," + resultCode);
+		if (requestCode == Launcher.CAMERA_REQUEST_CODE && resultCode == RESULT_OK) {
+			Bitmap bitmap = CameraActivity.takePictureBitmap();
+			getFwApplication().getModel().getCaptureModel().setCardBitmap(bitmap);
+			Launcher.startCapture(this, ExtraValue.AUTO_SETUP, Kind.NIL);
+		}
+	}
 	public void onClickCancel(View view) {
 		finish();
 	}
 	public void onClickOk(View view) {
-		CardDb db = MyApplication.getInstance().getCardDb();
-		db.putCardModel(mModel.getCardModel());
+		CardModel cardModel = mModel.getCardModel();
+		saveTextView(cardModel);
+		CardDb db = getFwApplication().getCardDb();
+		for (int i=0; i<100; i++) {
+			cardModel.put(Kind.NAME, "NAME-"+i);
+			mCurrentCardId = db.putCardModel(cardModel);
+		}
+		cardModel.setId(mCurrentCardId);
+		try {
+			Bitmap bitmap = getFwApplication().getModel().getCaptureModel().getCardBitmap();
+			if (bitmap != null) {
+				String url = CardImageUtil.saveThumbnail(this, mCurrentCardId, bitmap);
+				cardModel.put(Kind.IMAGE_URL, url);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		getFwApplication().getController().getCardListController().mHandler.loadCardList();
+		finish();
 	}
 
 	private void setupTextView(CardModel model) {
@@ -125,6 +154,19 @@ public class EditorActivity extends BaseActivity<CardHolderActivtyModel> impleme
 				textView.setText(model.get(kind));
 			} else {
 				textView.setText(null);
+			}
+		}
+	}
+	private void saveTextView(CardModel model) {
+		if (model == null) return;
+		for (Kind kind : Kind.values()) {
+			if (kind.textViewResId == 0) continue;
+			EditText textView = mEditMap.get(kind);
+			if (textView == null) continue;
+			if (textView.getText() == null) {
+				model.put(kind, null);
+			} else {
+				model.put(kind, textView.getText().toString());
 			}
 		}
 	}

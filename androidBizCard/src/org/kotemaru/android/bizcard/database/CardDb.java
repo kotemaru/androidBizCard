@@ -20,7 +20,6 @@ public class CardDb {
 	static final String DB_NAME = "card.db";
 	static final int VERSION = 100;
 
-
 	// テーブル定義
 	private static final String CARD_TABLE = "CARD_TABLE";
 
@@ -74,7 +73,6 @@ public class CardDb {
 		public void put(ContentValues values, String val) {values.put(name(), val);}
 		// @formatter:on
 	}
-
 
 	private static class SqlHelper extends SQLiteOpenHelper {
 		SqlHelper(Context context) {
@@ -160,19 +158,24 @@ public class CardDb {
 		return values;
 	}
 
-	public boolean putCardModel(CardModel model) {
+	public int putCardModel(CardModel model) {
 		SQLiteDatabase db = mSqlHelper.getWritableDatabase();
 		ContentValues values = fromModel(model);
 		if (model.getId() == -1) {
 			values.remove(Card._ID.name());
 			values.put(Card.CREATE_DATE.name(), getDateString(new Date()));
 			long rowId = db.insert(CARD_TABLE, null, values);
-			return rowId != -1;
+			return (int) rowId;
 		} else {
 			values.put(Card.UPDATE_DATE.name(), getDateString(new Date()));
 			int count = db.update(CARD_TABLE, values, Card._ID.where(), toArgs(model.getId()));
-			return count == 1;
+			return count == 1 ? model.getId() : -1;
 		}
+	}
+	public boolean removeCardModel(int id) {
+		SQLiteDatabase db = mSqlHelper.getWritableDatabase();
+		int count = db.delete(CARD_TABLE, Card._ID.where(), toArgs(id));
+		return count >= 1;
 	}
 	public boolean setAccessDate(int id, Date date) {
 		SQLiteDatabase db = mSqlHelper.getWritableDatabase();
@@ -194,9 +197,19 @@ public class CardDb {
 		}
 	}
 
-	public List<CardModel> getCardModelList() {
+	public List<CardModel> getCardModelList(String keyword) {
 		SQLiteDatabase db = mSqlHelper.getReadableDatabase();
-		Cursor cursor = db.query(CARD_TABLE, null, null, null, null, null, Card.COMPANY.name());
+		Cursor cursor;
+		if (keyword == null || keyword.isEmpty()) {
+			cursor = db.query(CARD_TABLE, null, null, null, null, null, Card.NAME.name());
+		} else {
+			String sql = "SELECT * FROM " + CARD_TABLE
+					+ " WHERE " + Card.NAME + " LIKE ? OR " + Card.COMPANY + " LIKE ?"
+					+ " ORDER BY " + Card.NAME;
+			String patt = "%"+keyword+"%";
+			String[] args = new String[]{patt,patt};
+			cursor = db.rawQuery(sql, args);
+		}
 		try {
 			List<CardModel> list = new ArrayList<CardModel>(cursor.getCount());
 			while (cursor.moveToNext()) {
@@ -209,17 +222,16 @@ public class CardDb {
 		}
 	}
 
-
 	private String[] toArgs(int id) {
-		return new String[]{Integer.toString(id)};
+		return new String[] { Integer.toString(id) };
 	}
 
 	private static SimpleDateFormat sDateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.US);
+
 	public static String getDateString(Date date) {
 		synchronized (sDateFormat) {
 			return sDateFormat.format(date);
 		}
 	}
-
 
 }

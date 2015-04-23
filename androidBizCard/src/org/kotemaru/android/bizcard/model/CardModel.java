@@ -2,8 +2,6 @@ package org.kotemaru.android.bizcard.model;
 
 import org.kotemaru.android.bizcard.R;
 
-
-
 public class CardModel {
 	public enum Kind {
 		// @formatter:off

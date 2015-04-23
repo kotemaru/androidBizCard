@@ -2,7 +2,6 @@ package org.kotemaru.android.bizcard.model;
 
 import org.kotemaru.android.fw.FwActivityModelBase;
 
-
 public class CardHolderActivtyModel extends FwActivityModelBase {
 	private CardModel mCardModel;
 

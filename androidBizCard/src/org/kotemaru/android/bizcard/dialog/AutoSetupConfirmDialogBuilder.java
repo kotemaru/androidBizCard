@@ -1,6 +1,7 @@
 package org.kotemaru.android.bizcard.dialog;
 
 import org.kotemaru.android.fw.dialog.DialogBuilder;
+import org.kotemaru.android.fw.dialog.DialogModel;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -21,7 +22,7 @@ public class AutoSetupConfirmDialogBuilder implements DialogBuilder {
 	}
 
 	@Override
-	public Dialog create(final Activity activity) {
+	public Dialog create(final Activity activity, final DialogModel model) {
 		AlertDialog.Builder builer = new AlertDialog.Builder(activity)
 				.setTitle(null)
 				.setMessage("自動設定しますか？");
@@ -31,6 +32,7 @@ public class AutoSetupConfirmDialogBuilder implements DialogBuilder {
 			public void onClick(DialogInterface dialog, int which) {
 				if (mListener != null) mListener.onAutoSetup(activity);
 				dialog.dismiss();
+				model.clear();
 			}
 		});
 		builer.setNegativeButton("手動設定", new DialogInterface.OnClickListener() {
@@ -38,9 +40,13 @@ public class AutoSetupConfirmDialogBuilder implements DialogBuilder {
 			public void onClick(DialogInterface dialog, int which) {
 				if (mListener != null) mListener.onManualSetup(activity);
 				dialog.dismiss();
+				model.clear();
 			}
 		});
 		return builer.create();
 	}
-
+	@Override
+	public Dialog update(Activity activity, DialogModel model, Dialog dialog) {
+		return dialog;
+	}
 }

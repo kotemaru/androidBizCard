@@ -9,11 +9,10 @@ import org.kotemaru.android.bizcard.model.CardListActivityModel;
 import org.kotemaru.android.bizcard.model.CardModel;
 import org.kotemaru.android.delegatehandler.annotation.GenerateDelegateHandler;
 import org.kotemaru.android.delegatehandler.annotation.Handle;
-import org.kotemaru.android.fw.FwControllerBase;
 import org.kotemaru.android.fw.thread.ThreadManager;
 
 @GenerateDelegateHandler
-public class CardListController extends FwControllerBase<MyApplication> {
+public class CardListController extends BaseController {
 	public final CardListControllerHandler mHandler;
 	public final CardListActivityModel mModel;
 
@@ -25,8 +24,8 @@ public class CardListController extends FwControllerBase<MyApplication> {
 
 	@Handle(thread = ThreadManager.WORKER)
 	void loadCardList() {
-		CardDb db = getApplication().getCardDb();
-		List<CardModel> list = db.getCardModelList();
+		CardDb db = getFwApplication().getCardDb();
+		List<CardModel> list = db.getCardModelList(mModel.getQueryText());
 		mModel.writeLock();
 		try {
 			mModel.setCardModelList(list);
@@ -34,9 +33,9 @@ public class CardListController extends FwControllerBase<MyApplication> {
 			mModel.writeUnlock();
 		}
 		if (list.size() == 0) {
-			mModel.getDialogModel().setInformationIfRequire(getApplication(), R.string.info_register);
+			mModel.getDialogModel().setInformationIfRequire(getFwApplication(), R.string.info_register);
 		}
-		getApplication().updateCurrentActivity();
+		getFwApplication().updateCurrentActivity();
 	}
 
 }

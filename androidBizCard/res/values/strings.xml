@@ -5,6 +5,12 @@
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
 
+    <!-- タイトル -->
+    <string name="title_card_list">名刺一覧</string>
+    <string name="title_viewer">名刺詳細</string>
+    <string name="title_editor">名刺編集</string>
+    <string name="title_capture">範囲選択</string>
+
     <!-- 属性名 -->
     <string name="kind_access_date">連絡日</string>
     <string name="kind_create_date">登録日</string>
@@ -27,11 +33,15 @@
     <string name="info_register">&lt;img src="ic_menu_add" /&gt;ボタンで名刺の新規登録ができます。</string>
     <string name="info_camera">&lt;img src="ic_menu_camera" /&gt;ボタンで名刺を撮影し入力文字を自動認識できます。</string>
     <string name="info_after_auto_setup">自動認識できなかった項目は&lt;img src="window" /&gt;ボタンで画像から入力文字を範囲選択できます。</string>
-    <string name="info_select_chars">文字を選択してから&lt;img src="ic_menu_edit" /&gt;ボタンで編集画面に戻ってください。</string>
+    <string name="info_select_chars">画像から文字を選択し&lt;img src="ic_menu_edit" /&gt;ボタンで編集画面に戻ってください。</string>
+    <string name="info_editor_camera">&lt;img src="ic_menu_camera" /&gt;ボタンで名刺を撮影し認識させることができます。</string>
+    <string name="info_capture_camera">この画像でよろしければ&lt;img src="ic_menu_edit" /&gt;ボタンで自動認識を開始して下さい。
+    自動認識後は編集画面に遷移します。撮影し直す場合は&lt;img src="ic_menu_camera" /&gt;ボタンをタップしてください。</string>
 
     <!-- Progress message -->
     <string name="prog_ocr_1">画像から文字を検出しています…</string>
     <string name="prog_ocr_2">文字列を識別しています…</string>
     <string name="prog_ocr_3">%sを識別しています…</string>
+    <string name="prog_ocr_cancel">中断処理中…</string>
 
 </resources>

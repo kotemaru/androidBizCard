@@ -16,16 +16,19 @@ import org.kotemaru.android.bizcard.util.OCRUtil;
 import org.kotemaru.android.bizcard.util.OCRUtil.WordInfo;
 import org.kotemaru.android.delegatehandler.annotation.GenerateDelegateHandler;
 import org.kotemaru.android.delegatehandler.annotation.Handle;
-import org.kotemaru.android.fw.FwControllerBase;
+import org.kotemaru.android.fw.dialog.OnDialogCancelListener;
+import org.kotemaru.android.fw.dialog.ProgressDialogBuilder;
 import org.kotemaru.android.fw.thread.ThreadManager;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Rect;
+import android.util.Log;
 
 @GenerateDelegateHandler
-public class CaptureController extends FwControllerBase<MyApplication> {
+public class CaptureController extends BaseController {
 	public final CaptureControllerHandler mHandler;
 	public final CaptureActivityModel mModel;
 
@@ -48,45 +51,64 @@ public class CaptureController extends FwControllerBase<MyApplication> {
 		} finally {
 			mModel.writeUnlock();
 		}
-		getApplication().updateCurrentActivity();
+		getFwApplication().updateCurrentActivity();
 	}
 
+	boolean mIsCancelled = false;
+
 	@Handle(thread = ThreadManager.WORKER)
-	public void doAutoSetup(Context context, Bitmap bitmap) throws IOException {
+	public void doAutoSetup(final Context context, Bitmap bitmap) throws IOException {
 		if (bitmap == null) return;
-
-		mModel.getDialogModel().setProgress(context.getString(R.string.prog_ocr_1), false, null);
-		getApplication().updateCurrentActivity();
-
-		List<WordInfo> words = OCRUtil.getWords(context, bitmap, JPN, 40);
-		List<WordInfo> ewords = OCRUtil.getWords(context, bitmap, ENG, 60);
-		String etext = OCRUtil.getText(context, bitmap, ENG);
-		mModel.writeLock();
+		ProgressDialogBuilder progress = mModel.getDialogModel().setProgress(context.getString(R.string.prog_ocr_1), true,
+				new OnDialogCancelListener() {
+					@Override
+					public void onDialogCancel(Activity activity) {
+						Log.e("DEBUG", "onDialogCancel");
+						mModel.getDialogModel().setProgress(context.getString(R.string.prog_ocr_cancel), false, null);
+					}
+				});
 		try {
-			mModel.setWordInfoList(words);
-		} finally {
-			mModel.writeUnlock();
-		}
-		mModel.getDialogModel().setProgress(context.getString(R.string.prog_ocr_2), false, null);
-		getApplication().updateCurrentActivity();
+			List<WordInfo> words = OCRUtil.getWords(context, bitmap, JPN, 40);
+			if (progress.isCancelled()) return;
+			List<WordInfo> ewords = OCRUtil.getWords(context, bitmap, ENG, 60);
+			if (progress.isCancelled()) return;
+			// List<WordInfo> words = OCRUtil.getBestWords(context, bitmap, 50);
+			// List<WordInfo> ewords = words;
+			String etext = OCRUtil.getLastText();
+			mModel.writeLock();
+			try {
+				mModel.setWordInfoList(words);
+			} finally {
+				mModel.writeUnlock();
+			}
+			progress.setMessage(context.getString(R.string.prog_ocr_2));
 
-		CardModel cardModel = new CardModel();
-		CaptureAutoSetup tool = new CaptureAutoSetup(context, cardModel, mModel.getDialogModel());
-		tool.getAutoSetupCardModel(context,bitmap, mModel.getWordInfoList(), ewords, etext);
-		getApplication().getModel().getCardHolderModel().setCardModelLocked(cardModel);
-		Launcher.startEditor(context, ExtraValue.AUTO_SETUP, -1);
+			if (progress.isCancelled()) return;
+			CardModel cardModel = new CardModel();
+			CaptureAutoSetup tool = new CaptureAutoSetup(context, cardModel, mModel.getDialogModel());
+			tool.getAutoSetupCardModel(context, bitmap, mModel.getWordInfoList(), ewords, etext);
+			getFwApplication().getModel().getCardHolderModel().setCardModelLocked(cardModel);
+			Launcher.startEditor(context, ExtraValue.AUTO_SETUP, -1);
+		} finally {
+			mModel.getDialogModel().clear();
+		}
 	}
 	@Handle(thread = ThreadManager.WORKER)
 	public void doScan(Context context, Bitmap bitmap, Rect rect, Kind kind) throws IOException {
-		WordInfo winfo = OCRUtil.getBestString(context, bitmap, rect);
-		CardHolderActivtyModel holderModel = getApplication().getModel().getCardHolderModel();
-		holderModel.writeLock();
+		mModel.getDialogModel().setProgress(context.getString(R.string.prog_ocr_1), false, null);
 		try {
-			holderModel.getCardModel().put(kind, winfo.word);
+			WordInfo winfo = OCRUtil.getBestString(context, bitmap, rect);
+			CardHolderActivtyModel holderModel = getFwApplication().getModel().getCardHolderModel();
+			holderModel.writeLock();
+			try {
+				holderModel.getCardModel().put(kind, winfo.word);
+			} finally {
+				holderModel.writeUnlock();
+			}
+			getFwApplication().goBackActivity(EditorActivity.class);
 		} finally {
-			holderModel.writeUnlock();
+			mModel.getDialogModel().clear();
 		}
-		getApplication().goBackActivity(EditorActivity.class);
 	}
 
 }
