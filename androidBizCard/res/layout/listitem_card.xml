@@ -2,19 +2,21 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="72sp"
-    android:padding="4dp" >
+    android:padding="4dp"
+    tools:ignore="HardcodedText,contentDescription" >
 
     <ImageView
         android:id="@+id/thumbnail"
         android:layout_width="72sp"
         android:layout_height="72sp"
         android:background="#eeeeee"
+        android:contentDescription=""
         android:padding="1dp"
         android:scaleType="fitCenter"
         android:src="@android:drawable/ic_menu_camera" />
 
     <TextView
-        android:id="@+id/company"
+        android:id="@+id/kind_company"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
@@ -22,21 +24,21 @@
         android:layout_toRightOf="@+id/thumbnail"
         android:text="campany"
         android:textColor="#000000"
-        android:textSize="12sp" />
+        android:textSize="14sp" />
 
     <TextView
-        android:id="@+id/position"
+        android:id="@+id/kind_position"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/company"
-        android:layout_marginLeft="20sp"
-        android:layout_toRightOf="@+id/company"
+        android:layout_alignBaseline="@+id/kind_company"
+        android:layout_marginLeft="14sp"
+        android:layout_toRightOf="@+id/kind_company"
         android:text="position"
         android:textColor="#000000"
-        android:textSize="12sp" />
+        android:textSize="14sp" />
 
     <TextView
-        android:id="@+id/name"
+        android:id="@+id/kind_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
@@ -54,6 +56,6 @@
         android:layout_alignParentRight="true"
         android:text="option"
         android:textColor="#000000"
-        android:textSize="10sp" />
+        android:textSize="12sp" />
 
 </RelativeLayout>

@@ -15,7 +15,7 @@ import android.widget.SearchView;
 public abstract class BaseActivity<M extends FwActivityModelBase>
 		extends FwActivityBase<MyApplication, M>
 {
-	private static final String TAG = BaseActivity.class.getSimpleName();
+	public static final String TAG = BaseActivity.class.getSimpleName();
 
 	@Override
 	public MyApplication getFwApplication() {
@@ -68,28 +68,32 @@ public abstract class BaseActivity<M extends FwActivityModelBase>
 			item.setIcon(type.iconResId);
 			item.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
 			if (type == MenuItemType.SEARCH) {
-				final SearchView searchView = new SearchView(this);
+				SearchView searchView = createSearchView();
 				item.setActionView(searchView);
-				searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener(){
-					@Override
-					public boolean onQueryTextChange(String newText) {
-						return BaseActivity.this.onQueryTextChange(newText);
-					}
-					@Override
-					public boolean onQueryTextSubmit(String query) {
-						return BaseActivity.this.onQueryTextSubmit(query);
-					}
-				});
-				searchView.setOnCloseListener(new SearchView.OnCloseListener(){
-					@Override
-					public boolean onClose() {
-						BaseActivity.this.onQueryTextSubmit(null);
-						return false;
-					}
-				});
 			}
 		}
 		return true;
+	}
+	private SearchView createSearchView() {
+		final SearchView searchView = new SearchView(this);
+		searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener(){
+			@Override
+			public boolean onQueryTextChange(String newText) {
+				return BaseActivity.this.onQueryTextChange(newText);
+			}
+			@Override
+			public boolean onQueryTextSubmit(String query) {
+				return BaseActivity.this.onQueryTextSubmit(query);
+			}
+		});
+		searchView.setOnCloseListener(new SearchView.OnCloseListener(){
+			@Override
+			public boolean onClose() {
+				BaseActivity.this.onQueryTextSubmit(null);
+				return false;
+			}
+		});
+		return searchView;
 	}
 
 	protected boolean onQueryTextChange(String query) {

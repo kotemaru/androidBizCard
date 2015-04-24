@@ -1,7 +1,9 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content" >
+    android:layout_height="wrap_content"
+    android:layout_above="@+id/content_root"
+    tools:ignore="HardcodedText,contentDescription,SmallSp" >
 
     <ScrollView
         android:layout_width="match_parent"
@@ -24,27 +26,27 @@
                     android:id="@+id/thumbnail"
                     android:layout_width="128dp"
                     android:layout_height="128dp"
-                    android:padding="2dp"
                     android:layout_marginBottom="5dp"
                     android:background="#eeeeee"
+                    android:padding="2dp"
                     android:src="@android:drawable/ic_menu_camera" />
 
                 <LinearLayout
-                    android:layout_marginLeft="8dp"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_marginLeft="8dp"
                     android:layout_weight="1"
                     android:orientation="vertical" >
 
                     <TextView
-                        android:id="@+id/company"
+                        android:id="@+id/kind_company"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/kind_company"
                         android:textSize="20sp" />
 
                     <TextView
-                        android:id="@+id/organization"
+                        android:id="@+id/kind_organization"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="20sp"
@@ -52,7 +54,7 @@
                         android:textSize="12sp" />
 
                     <TextView
-                        android:id="@+id/position"
+                        android:id="@+id/kind_position"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="20sp"
@@ -60,7 +62,7 @@
                         android:textSize="14sp" />
 
                     <TextView
-                        android:id="@+id/kana"
+                        android:id="@+id/kind_kana"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="40sp"
@@ -69,7 +71,7 @@
                         android:textSize="10sp" />
 
                     <TextView
-                        android:id="@+id/name"
+                        android:id="@+id/kind_name"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="10sp"
@@ -80,7 +82,7 @@
             </LinearLayout>
 
             <TextView
-                android:id="@+id/address"
+                android:id="@+id/kind_address"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="right"
@@ -96,14 +98,15 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="TEL:"
+                    android:layout_marginRight="5sp"
+                    android:text="@string/kind_tel"
                     android:textSize="12sp" />
 
                 <TextView
-                    android:id="@+id/tel"
+                    android:id="@+id/kind_tel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/kind_tel"
+                    android:text="03-0000-0000"
                     android:textSize="12sp" />
             </LinearLayout>
 
@@ -116,14 +119,15 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="FAX:"
+                    android:layout_marginRight="5sp"
+                    android:text="@string/kind_fax"
                     android:textSize="12sp" />
 
                 <TextView
-                    android:id="@+id/fax"
+                    android:id="@+id/kind_fax"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/kind_fax"
+                    android:text="03-9999-9999"
                     android:textSize="12sp" />
             </LinearLayout>
 
@@ -137,19 +141,20 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="20sp"
-                    android:text="携帯:"
+                    android:layout_marginRight="5sp"
+                    android:text="@string/kind_mobile"
                     android:textSize="12sp" />
 
                 <TextView
-                    android:id="@+id/mobile"
+                    android:id="@+id/kind_mobile"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/kind_mobile"
+                    android:text="090-9999-9999"
                     android:textSize="12sp" />
             </LinearLayout>
 
             <TextView
-                android:id="@+id/email"
+                android:id="@+id/kind_email"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="right"
@@ -157,7 +162,7 @@
                 android:textSize="12sp" />
 
             <TextView
-                android:id="@+id/web"
+                android:id="@+id/kind_web"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="right"
@@ -168,12 +173,13 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="left"
-                android:text="備考:" />
+                android:text="@string/kind_notes" />
+
             <TextView
-                android:id="@+id/notes"
+                android:id="@+id/kind_notes"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/kind_notes" />
+                android:text="ほげほげ" />
         </LinearLayout>
     </ScrollView>
 
@@ -184,14 +190,17 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:orientation="horizontal"
-        android:padding="5dp" >
+        android:padding="0dp" >
 
         <ImageView
             android:id="@+id/phone_button"
             android:layout_width="0dp"
             android:layout_height="50dp"
             android:layout_gravity="center"
+            android:layout_margin="1dp"
             android:layout_weight="1"
+            android:background="@color/button_bg"
+            android:padding="4dp"
             android:src="@drawable/phone" />
 
         <ImageView
@@ -199,23 +208,32 @@
             android:layout_width="0dp"
             android:layout_height="50dp"
             android:layout_gravity="center"
+            android:layout_margin="1dp"
             android:layout_weight="1"
+            android:background="@color/button_bg"
+            android:padding="4dp"
             android:src="@drawable/mobile_phone" />
 
         <ImageView
             android:id="@+id/email_button"
             android:layout_width="0dp"
-            android:layout_height="36dp"
+            android:layout_height="50dp"
             android:layout_gravity="center"
+            android:layout_margin="1dp"
             android:layout_weight="1"
+            android:background="@color/button_bg"
+            android:padding="12dp"
             android:src="@drawable/envelope" />
 
         <ImageView
             android:id="@+id/browser_button"
             android:layout_width="0dp"
-            android:layout_height="45dp"
+            android:layout_height="50dp"
             android:layout_gravity="center"
+            android:layout_margin="1dp"
             android:layout_weight="1"
+            android:background="@color/button_bg"
+            android:padding="6dp"
             android:src="@drawable/globe" />
     </LinearLayout>
 

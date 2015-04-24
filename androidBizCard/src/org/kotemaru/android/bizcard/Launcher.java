@@ -5,7 +5,7 @@ import org.kotemaru.android.bizcard.activity.CaptureActivity;
 import org.kotemaru.android.bizcard.activity.CardListActivity;
 import org.kotemaru.android.bizcard.activity.EditorActivity;
 import org.kotemaru.android.bizcard.activity.ViewerActivity;
-import org.kotemaru.android.bizcard.model.CardModel.Kind;
+import org.kotemaru.android.bizcard.model.Kind;
 
 import android.app.Activity;
 import android.content.Context;
@@ -77,22 +77,28 @@ public class Launcher {
 		startEditor(context, ExtraValue.NIL, -1);
 	}
 
-	public static void startDialer(Context context, String tel) {
+	public static void startDialer(Context context, CharSequence tel) {
+		Log.d(TAG, "startDialer:" + tel);
 		Uri uri = Uri.parse("tel:" + tel);
 		Intent intent = new Intent(Intent.ACTION_DIAL, uri);
+		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		context.startActivity(intent);
 	}
 
-	public static void startMailer(Context context, String email) {
+	public static void startMailer(Context context, CharSequence email) {
+		Log.d(TAG, "startMailer:" + email);
 		Intent intent = new Intent();
+		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		intent.setAction(Intent.ACTION_SEND);
 		intent.setType("message/rfc822");
-		intent.putExtra(Intent.EXTRA_EMAIL, new String[] { email });
+		intent.putExtra(Intent.EXTRA_EMAIL, new String[] { email.toString() });
 		context.startActivity(intent);
 	}
-	public static void startBrowser(Context context, String url) {
-		Uri uri = Uri.parse(url);
+	public static void startBrowser(Context context, CharSequence url) {
+		Log.d(TAG, "startBrowser:" + url);
+		Uri uri = Uri.parse(url.toString());
 		Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		context.startActivity(intent);
 	}
 }

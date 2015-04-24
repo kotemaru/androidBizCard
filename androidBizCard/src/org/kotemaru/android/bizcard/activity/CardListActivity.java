@@ -9,13 +9,13 @@ import org.kotemaru.android.bizcard.R;
 import org.kotemaru.android.bizcard.controller.CardListController;
 import org.kotemaru.android.bizcard.model.CardListActivityModel;
 import org.kotemaru.android.bizcard.model.CardModel;
-import org.kotemaru.android.bizcard.model.CardModel.Kind;
+import org.kotemaru.android.bizcard.model.Kind;
 import org.kotemaru.android.bizcard.util.CardImageUtil;
 import org.kotemaru.android.fw.FwActivity;
 import org.kotemaru.android.fw.dialog.ConfirmDialogListener;
-import org.kotemaru.android.fw.util.image.DefaultImageLoaderProducer;
-import org.kotemaru.android.fw.util.image.ImageLoader;
-import org.kotemaru.android.fw.util.image.ImageLoaderProducer;
+import org.kotemaru.android.fw.plugin.imageloader.DefaultImageLoaderProducer;
+import org.kotemaru.android.fw.plugin.imageloader.ImageLoader;
+import org.kotemaru.android.fw.plugin.imageloader.ImageLoaderProducer;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -39,6 +39,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 public class CardListActivity extends BaseActivity<CardListActivityModel> implements FwActivity {
+	public static final String TAG = CardListActivity.class.getSimpleName();
 
 	private CardListActivityModel mModel;
 	private CardListController mController;
@@ -185,9 +186,9 @@ public class CardListActivity extends BaseActivity<CardListActivityModel> implem
 			holder.mCompany.setText(model.get(Kind.COMPANY));
 			holder.mPosition.setText(model.get(Kind.POSITION));
 			holder.mName.setText(model.get(Kind.NAME));
-			String accessDate = model.get(Kind.ACCESS_DATE);
+			CharSequence accessDate = model.get(Kind.ACCESS_DATE);
 			if (accessDate != null) {
-				holder.mOption.setText("最終連絡日:" + accessDate.substring(0, 10));
+				holder.mOption.setText("最終連絡日:" + accessDate.subSequence(0, 10));
 			} else {
 				holder.mOption.setText(null);
 			}
@@ -206,13 +207,12 @@ public class CardListActivity extends BaseActivity<CardListActivityModel> implem
 
 			ViewHolder(View parent) {
 				mThumbnail = (ImageView) parent.findViewById(R.id.thumbnail);
-				mCompany = (TextView) parent.findViewById(R.id.company);
-				mPosition = (TextView) parent.findViewById(R.id.position);
-				mName = (TextView) parent.findViewById(R.id.name);
+				mCompany = Kind.COMPANY.getTextView(parent);
+				mPosition = Kind.POSITION.getTextView(parent);
+				mName = Kind.NAME.getTextView(parent);
 				mOption = (TextView) parent.findViewById(R.id.option);
 			}
 		}
-
 	}
 
 	private class CardGestureListener extends SimpleOnGestureListener {
@@ -224,14 +224,13 @@ public class CardListActivity extends BaseActivity<CardListActivityModel> implem
 
 		@Override
 		public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-			Log.e("DEBUG", "###onFling:listitem:" + mCardModel.getId()+":"+velocityX+velocityY);
+			Log.d(TAG, "onFling:listitem:" + mCardModel.getId()+":"+velocityX+velocityY);
 			if (Math.abs(velocityX) < 1000 || Math.abs(velocityX)<=Math.abs(velocityY)) return false;
 			mModel.getDialogModel().setConfirm("削除", mCardModel.get(Kind.NAME) + "さんの名刺を削除します。",
 					new ConfirmDialogListener() {
 						@Override
 						public void onDialogOkay(Activity activity) {
-							getFwApplication().getCardDb().removeCardModel(mCardModel.getId());
-							mController.mHandler.loadCardList();
+							mController.mHandler.removeCardModel(mCardModel);
 						}
 						@Override
 						public void onDialogCancel(Activity activity) {

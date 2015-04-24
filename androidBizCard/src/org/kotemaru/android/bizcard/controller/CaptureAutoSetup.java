@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 
 import org.kotemaru.android.bizcard.R;
 import org.kotemaru.android.bizcard.model.CardModel;
-import org.kotemaru.android.bizcard.model.CardModel.Kind;
+import org.kotemaru.android.bizcard.model.Kind;
 import org.kotemaru.android.bizcard.util.OCRUtil;
 import org.kotemaru.android.bizcard.util.OCRUtil.WordInfo;
 import org.kotemaru.android.delegatehandler.annotation.GenerateDelegateHandler;

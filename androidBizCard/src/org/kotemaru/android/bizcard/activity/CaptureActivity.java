@@ -10,7 +10,8 @@ import org.kotemaru.android.bizcard.MyApplication;
 import org.kotemaru.android.bizcard.R;
 import org.kotemaru.android.bizcard.controller.CaptureController;
 import org.kotemaru.android.bizcard.model.CaptureActivityModel;
-import org.kotemaru.android.bizcard.model.CardModel.Kind;
+import org.kotemaru.android.bizcard.model.Kind;
+import org.kotemaru.android.bizcard.util.DialogUtil;
 import org.kotemaru.android.bizcard.util.OCRUtil.WordInfo;
 import org.kotemaru.android.fw.util.WindowUtil;
 
@@ -83,11 +84,11 @@ public class CaptureActivity extends BaseActivity<CaptureActivityModel> {
 		Kind kind = Kind.toKind(intent.getStringExtra(ExtraKey.KIND.name()));
 		switch (mode) {
 		case WITH_TARGET:
-			mModel.getDialogModel().setInformationIfRequire(this, R.string.info_select_chars);
+			DialogUtil.setInformationIfRequire(mModel.getDialogModel(), R.string.info_select_chars);
 			mModel.setTargetKind(kind);
 			break;
 		case AUTO_SETUP:
-			mModel.getDialogModel().setInformationIfRequire(this, R.string.info_capture_camera);
+			DialogUtil.setInformationIfRequire(mModel.getDialogModel(), R.string.info_capture_camera);
 			mModel.setTargetKind(Kind.NIL);
 			break;
 		default:

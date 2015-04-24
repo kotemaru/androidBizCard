@@ -47,7 +47,7 @@ import android.widget.FrameLayout.LayoutParams;
 import android.widget.ImageView;
 
 public class CameraActivity extends FwActivityBase<MyApplication, CameraActivityModel> {
-	private static final String TAG = "CameraActivity";
+	public static final String TAG = CameraActivity.class.getSimpleName();
 
 	private static byte[] sPictureData = null;
 	private static Bitmap sPictureBitmap = null;;

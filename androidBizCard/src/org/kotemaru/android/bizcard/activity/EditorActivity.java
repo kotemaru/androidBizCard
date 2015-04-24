@@ -1,6 +1,5 @@
 package org.kotemaru.android.bizcard.activity;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -10,11 +9,10 @@ import org.kotemaru.android.bizcard.Launcher.ExtraValue;
 import org.kotemaru.android.bizcard.MyApplication;
 import org.kotemaru.android.bizcard.R;
 import org.kotemaru.android.bizcard.controller.EditorController;
-import org.kotemaru.android.bizcard.database.CardDb;
 import org.kotemaru.android.bizcard.model.CardHolderActivtyModel;
 import org.kotemaru.android.bizcard.model.CardModel;
-import org.kotemaru.android.bizcard.model.CardModel.Kind;
-import org.kotemaru.android.bizcard.util.CardImageUtil;
+import org.kotemaru.android.bizcard.model.Kind;
+import org.kotemaru.android.bizcard.util.DialogUtil;
 import org.kotemaru.android.fw.FwActivity;
 
 import android.content.Intent;
@@ -31,10 +29,11 @@ import android.widget.TextView;
 public class EditorActivity extends BaseActivity<CardHolderActivtyModel> implements FwActivity {
 	private static final String TAG = EditorActivity.class.getSimpleName();
 
+	private View mContentRoot;
 	private CardHolderActivtyModel mModel;
 	private EditorController mController;
 	private int mCurrentCardId;
-	private Map<Kind, EditText> mEditMap = new HashMap<Kind, EditText>();
+	private Map<Kind, EditText> mEditTextMap = new HashMap<Kind, EditText>();
 
 	@Override
 	public CardHolderActivtyModel getActivityModel() {
@@ -45,34 +44,14 @@ public class EditorActivity extends BaseActivity<CardHolderActivtyModel> impleme
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_editor);
+		mContentRoot = findViewById(R.id.content_root);
 		setTitle(R.string.title_editor);
 		MyApplication app = MyApplication.getInstance();
 		mModel = app.getModel().getCardHolderModel();
 		mController = app.getController().getEditorController();
-
-		View parent = findViewById(R.id.items);
-		for (Kind kind : Kind.values()) {
-			if (kind.labelResId == 0) continue;
-			View item = parent.findViewById(kind.textViewResId);
-			if (item == null) continue;
-			TextView title = (TextView) item.findViewById(R.id.title);
-			EditText edit = (EditText) item.findViewById(R.id.edit);
-			ImageView search = (ImageView) item.findViewById(R.id.search);
-			title.setText(getString(kind.labelResId));
-			search.setOnClickListener(getOnClickListener(kind));
-			mEditMap.put(kind, edit);
-		}
+		initEditText();
 	}
 
-	private OnClickListener getOnClickListener(final Kind kind) {
-		return new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				mEditMap.get(kind).requestFocus();
-				Launcher.startCapture(EditorActivity.this, ExtraValue.WITH_TARGET, kind);
-			}
-		};
-	}
 
 	@Override
 	protected void onLaunch(Intent intent) {
@@ -83,14 +62,14 @@ public class EditorActivity extends BaseActivity<CardHolderActivtyModel> impleme
 			Log.i(TAG, "onResume:reset data");
 			mCurrentCardId = intent.getExtras().getInt(Launcher.ExtraKey.ID.name());
 			if (mCurrentCardId == -1) {
-				mModel.getDialogModel().setInformationIfRequire(this, R.string.info_editor_camera);
+				DialogUtil.setInformationIfRequire(mModel.getDialogModel(), R.string.info_editor_camera);
 				mModel.setCardModel(new CardModel());
 			} else {
 				mController.mHandler.loadCard(mCurrentCardId);
 			}
 			break;
 		case AUTO_SETUP:
-			mModel.getDialogModel().setInformationIfRequire(this, R.string.info_after_auto_setup);
+			DialogUtil.setInformationIfRequire(mModel.getDialogModel(), R.string.info_after_auto_setup);
 			break;
 		default:
 			break;
@@ -100,12 +79,12 @@ public class EditorActivity extends BaseActivity<CardHolderActivtyModel> impleme
 	@Override
 	protected void onPause() {
 		super.onPause();
-		saveTextView(mModel.getCardModel());
+		viewToModel(mModel.getCardModel());
 	}
 
 	@Override
 	public void onUpdateInReadLocked(CardHolderActivtyModel model) {
-		setupTextView(mModel.getCardModel());
+		modelToView(mModel.getCardModel());
 	}
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -125,49 +104,43 @@ public class EditorActivity extends BaseActivity<CardHolderActivtyModel> impleme
 	}
 	public void onClickOk(View view) {
 		CardModel cardModel = mModel.getCardModel();
-		saveTextView(cardModel);
-		CardDb db = getFwApplication().getCardDb();
-		for (int i=0; i<100; i++) {
-			cardModel.put(Kind.NAME, "NAME-"+i);
-			mCurrentCardId = db.putCardModel(cardModel);
-		}
-		cardModel.setId(mCurrentCardId);
-		try {
-			Bitmap bitmap = getFwApplication().getModel().getCaptureModel().getCardBitmap();
-			if (bitmap != null) {
-				String url = CardImageUtil.saveThumbnail(this, mCurrentCardId, bitmap);
-				cardModel.put(Kind.IMAGE_URL, url);
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		getFwApplication().getController().getCardListController().mHandler.loadCardList();
-		finish();
+		viewToModel(cardModel);
+		mController.mHandler.register(this, cardModel);
 	}
 
-	private void setupTextView(CardModel model) {
+	private void initEditText() {
 		for (Kind kind : Kind.values()) {
-			if (kind.textViewResId == 0) continue;
-			EditText textView = mEditMap.get(kind);
-			if (textView == null) continue;
-			if (model != null) {
-				textView.setText(model.get(kind));
-			} else {
-				textView.setText(null);
-			}
+			String label = kind.getLabel(this);
+			View item = kind.getTextView(mContentRoot);
+			if (label == null || item == null) continue;
+
+			TextView title = (TextView) item.findViewById(R.id.title);
+			EditText editText = (EditText) item.findViewById(R.id.edit);
+			ImageView search = (ImageView) item.findViewById(R.id.search);
+			title.setText(label);
+			search.setOnClickListener(getOnClickListener(kind));
+			mEditTextMap.put(kind, editText);
 		}
 	}
-	private void saveTextView(CardModel model) {
+	private OnClickListener getOnClickListener(final Kind kind) {
+		return new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				mEditTextMap.get(kind).requestFocus();
+				Launcher.startCapture(EditorActivity.this, ExtraValue.WITH_TARGET, kind);
+			}
+		};
+	}
+
+	private void modelToView(CardModel model) {
+		for (Kind kind : Kind.values()) {
+			kind.modelToView(model, mContentRoot);
+		}
+	}
+	private void viewToModel(CardModel model) {
 		if (model == null) return;
 		for (Kind kind : Kind.values()) {
-			if (kind.textViewResId == 0) continue;
-			EditText textView = mEditMap.get(kind);
-			if (textView == null) continue;
-			if (textView.getText() == null) {
-				model.put(kind, null);
-			} else {
-				model.put(kind, textView.getText().toString());
-			}
+			kind.viewToModel(mContentRoot, model);
 		}
 	}
 

@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Locale;
 
 import org.kotemaru.android.bizcard.model.CardModel;
-import org.kotemaru.android.bizcard.model.CardModel.Kind;
-import org.kotemaru.android.fw.util.sql.SqlUtil;
+import org.kotemaru.android.bizcard.model.Kind;
+import org.kotemaru.android.fw.util.SqlUtil;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -71,6 +71,7 @@ public class CardDb {
 		public void put(ContentValues values, long val) {values.put(name(), val);}
 		public void put(ContentValues values, int val) {values.put(name(), val);}
 		public void put(ContentValues values, String val) {values.put(name(), val);}
+		public void put(ContentValues values, CharSequence val) {values.put(name(), val.toString());}
 		// @formatter:on
 	}
 
