@@ -13,6 +13,7 @@ import org.kotemaru.android.delegatehandler.annotation.Handle;
 import org.kotemaru.android.fw.thread.ThreadManager;
 
 import android.util.Log;
+import android.widget.Toast;
 
 @GenerateDelegateHandler
 public class ViewerController extends BaseController {
@@ -40,7 +41,10 @@ public class ViewerController extends BaseController {
 	void doAction(Kind kind, CardModel model) {
 		Log.w(TAG, "doAction: " + kind);
 		CharSequence val = model.get(kind);
-		if (val == null || val.length() == 0) return;
+		if (val == null || val.length() == 0) {
+			mHandler.showToast(kind.getLabel(getFwApplication())+"が未定義です。");
+			return;
+		}
 		switch (kind) {
 		case TEL:
 			Launcher.startDialer(getFwApplication(), val);
@@ -65,6 +69,11 @@ public class ViewerController extends BaseController {
 	private void setAccessData(CardModel model) {
 		mCardDb.setAccessDate(model.getId(), new Date());
 		getFwApplication().getController().getCardListController().mHandler.loadCardList();
+	}
+
+	@Handle(thread = ThreadManager.UI)
+	void showToast(String msg) {
+		Toast.makeText(getFwApplication(), msg, Toast.LENGTH_SHORT).show();
 	}
 
 }

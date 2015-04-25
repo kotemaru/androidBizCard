@@ -111,7 +111,7 @@ public class EditorActivity extends BaseActivity<CardHolderActivtyModel> impleme
 	private void initEditText() {
 		for (Kind kind : Kind.values()) {
 			String label = kind.getLabel(this);
-			View item = kind.getTextView(mContentRoot);
+			View item = kind.getView(mContentRoot);
 			if (label == null || item == null) continue;
 
 			TextView title = (TextView) item.findViewById(R.id.title);
@@ -134,13 +134,14 @@ public class EditorActivity extends BaseActivity<CardHolderActivtyModel> impleme
 
 	private void modelToView(CardModel model) {
 		for (Kind kind : Kind.values()) {
-			kind.modelToView(model, mContentRoot);
+			TextView textView = mEditTextMap.get(kind);
+			if (textView != null) textView.setText(kind.getValue(model));
 		}
 	}
 	private void viewToModel(CardModel model) {
-		if (model == null) return;
 		for (Kind kind : Kind.values()) {
-			kind.viewToModel(mContentRoot, model);
+			TextView textView = mEditTextMap.get(kind);
+			if (textView != null) kind.setValue(model, textView.getText());
 		}
 	}
 

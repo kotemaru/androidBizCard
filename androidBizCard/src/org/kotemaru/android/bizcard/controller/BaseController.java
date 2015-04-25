@@ -6,8 +6,11 @@ import org.kotemaru.android.delegatehandler.rt.OnDelegateHandlerErrorListener;
 import org.kotemaru.android.fw.FwControllerBase;
 import org.kotemaru.android.fw.thread.ThreadManager;
 
+import android.util.Log;
+
 public class BaseController extends FwControllerBase<MyApplication>
 		implements OnDelegateHandlerErrorListener {
+	public static final String TAG = BaseController.class.getSimpleName();
 
 	protected BaseController(MyApplication app) {
 		super(app);
@@ -15,6 +18,7 @@ public class BaseController extends FwControllerBase<MyApplication>
 
 	@Override
 	public void onDelegateHandlerError(final Throwable t, String methodName, Object... args) {
+		Log.e(TAG, "onDelegateHandlerError:"+t);
 		getFwApplication().getThreadManager().post(ThreadManager.UI, new Runnable() {
 			@Override
 			public void run() {

@@ -49,10 +49,19 @@ public class CardImageUtil {
 	}
 
 	public static File getThumbnailFile(Context context, int id) {
+		return getThumbnailFile(context, toStringId(id));
+	}
+	public static File getThumbnailFile(Context context, CharSequence id) {
 		File dataDir = context.getFilesDir();
-		String idStr = String.format(Locale.US, "%010d", Integer.valueOf(id));
-		File file = new File(dataDir, "thumbnail/" + idStr + ".png");
+		File file = new File(dataDir, "thumbnail/" + id + ".png");
 		return file;
+	}
+
+	public static CharSequence toStringId(int id) {
+		StringBuilder sbuf = new StringBuilder(20);
+		sbuf.append("000000000");
+		sbuf.append(id);
+		return sbuf.subSequence(sbuf.length()-10, sbuf.length());
 	}
 
 	public static Bitmap toThumbnail(Bitmap bitmap) {

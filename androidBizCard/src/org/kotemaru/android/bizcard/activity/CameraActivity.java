@@ -2,7 +2,6 @@ package org.kotemaru.android.bizcard.activity;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
 
 import org.kotemaru.android.bizcard.BuildConfig;
 import org.kotemaru.android.bizcard.MyApplication;
@@ -31,23 +30,19 @@ import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.hardware.Camera;
 import android.hardware.Camera.AutoFocusCallback;
-import android.hardware.Camera.CameraInfo;
-import android.hardware.Camera.Parameters;
 import android.hardware.Camera.PictureCallback;
-import android.hardware.Camera.Size;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.FrameLayout;
-import android.widget.FrameLayout.LayoutParams;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 public class CameraActivity extends FwActivityBase<MyApplication, CameraActivityModel> {
 	public static final String TAG = CameraActivity.class.getSimpleName();
+	private static final float CARD_ASPECT = 1.654545454545455F;
 
 	private static byte[] sPictureData = null;
 	private static Bitmap sPictureBitmap = null;;
@@ -88,7 +83,7 @@ public class CameraActivity extends FwActivityBase<MyApplication, CameraActivity
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.fw_activity_camera);
+		setContentView(R.layout.activity_camera);
 		mModel = new CameraActivityModel();
 		sPictureBitmap = null;
 
@@ -106,7 +101,7 @@ public class CameraActivity extends FwActivityBase<MyApplication, CameraActivity
 	protected OnClickListener mDefaultShutterAction = new OnClickListener() {
 		@Override
 		public void onClick(View v) {
-			mCamera.setDisplayOrientation(getDisplayOrientation());
+			mCamera.setDisplayOrientation(CameraUtil.getDisplayOrientation(CameraActivity.this));
 			mCamera.autoFocus(new AutoFocusCallback() {
 				@Override
 				public void onAutoFocus(boolean success, Camera camera) {
@@ -120,6 +115,8 @@ public class CameraActivity extends FwActivityBase<MyApplication, CameraActivity
 								finish();
 							}
 						});
+					} else {
+						Toast.makeText(CameraActivity.this, "Failed focus.", Toast.LENGTH_SHORT).show();
 					}
 				}
 			});
@@ -148,7 +145,7 @@ public class CameraActivity extends FwActivityBase<MyApplication, CameraActivity
 			Rect clipRect = getClipRect(decoder.getWidth(), decoder.getHeight());
 			Bitmap bitmap = decoder.decodeRegion(clipRect, null);
 
-			int deg = getDisplayOrientation();
+			int deg = CameraUtil.getDisplayOrientation(this);
 			if (deg == 0) return bitmap;
 			Matrix mat = new Matrix();
 			mat.postRotate(deg);
@@ -172,37 +169,6 @@ public class CameraActivity extends FwActivityBase<MyApplication, CameraActivity
 		// mOverlayListener.onDraw();
 	}
 
-	private int getDisplayOrientation() {
-		CameraInfo info = CameraUtil.getCameraInfo();
-		int rotation = getWindowManager().getDefaultDisplay().getRotation();
-		int degrees = 0;
-		switch (rotation) {
-		case Surface.ROTATION_0:
-			degrees = 0;
-			break;
-		case Surface.ROTATION_90:
-			degrees = 90;
-			break;
-		case Surface.ROTATION_180:
-			degrees = 180;
-			break;
-		case Surface.ROTATION_270:
-			degrees = 270;
-			break;
-		}
-
-		int result;
-		if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-			result = (info.orientation + degrees) % 360;
-			result = (360 - result) % 360;  // compensate the mirror
-		} else {  // back-facing
-			result = (info.orientation - degrees + 360) % 360;
-		}
-		Log.e("DEBUG", "getDisplayOrientation:" + result + ":" + rotation);
-		return result;
-	}
-
-	private static final float CARD_ASPECT = 1.654545454545455F;
 
 	private Rect getClipRect(int width, int height) {
 		int w, h;
@@ -220,81 +186,13 @@ public class CameraActivity extends FwActivityBase<MyApplication, CameraActivity
 		return new Rect(left, top, right, bottom);
 	}
 
-	private void setPreviewAspect(Camera camera) {
-		Parameters params = camera.getParameters();
-		Size rsize = params.getPictureSize();
-		float raspect = (float) rsize.width / (float) rsize.height;
-		float minDiff = 1000000000000F;
-		Size psize = params.getPreviewSize();
-		List<Size> sizes = params.getSupportedPreviewSizes();
-		for (Size size : sizes) {
-			float paspect = (float) size.width / (float) size.height;
-			float diff = Math.abs(raspect - paspect);
-			if (diff < minDiff) {
-				psize = size;
-				minDiff = diff;
-			}
-			if (diff == 0.0F) break;
-		}
-		params.setPreviewSize(psize.width, psize.height);
-		camera.setParameters(params);
-
-		FrameLayout.LayoutParams layoutParams = (LayoutParams) mPreview.getLayoutParams();
-		if (mPreview.getWidth() < mPreview.getHeight()) {
-			// portrait
-			int cw = Math.min(psize.height, psize.width);
-			int ch = Math.max(psize.height, psize.width);
-			float aspect = (float) cw / ch;
-			if (aspect < 0.0F) {
-				layoutParams.width = Math.round(mPreview.getHeight() * aspect);
-				layoutParams.height = mPreview.getHeight();
-			} else {
-				layoutParams.width = mPreview.getWidth();
-				layoutParams.height = Math.round(mPreview.getWidth() / aspect);
-			}
-		} else {
-			// landscape
-			int cw = Math.max(psize.height, psize.width);
-			int ch = Math.min(psize.height, psize.width);
-			float aspect = (float) cw / ch;
-			if (aspect < 0.0F) {
-				layoutParams.width = mPreview.getWidth();
-				layoutParams.height = Math.round(mPreview.getWidth() / aspect);
-			} else {
-				layoutParams.width = Math.round(mPreview.getHeight() * aspect);
-				layoutParams.height = mPreview.getHeight();
-			}
-		}
-		mPreview.setLayoutParams(layoutParams);
-		mPreview.invalidate();
-		mOverlay.setLayoutParams(layoutParams);
-		mOverlay.invalidate();
-	}
-
-	private void setBestFps(Camera camera) {
-		Parameters params = camera.getParameters();
-		int min = 100000000;
-		int max = 0;
-		List<int[]> ranges = params.getSupportedPreviewFpsRange();
-		for (int[] range : ranges) {
-			if (min >= range[0] && range[1] >= max) {
-				min = range[0];
-				max = range[1];
-			}
-		}
-		int[] r = new int[2];
-		params.getPreviewFpsRange(r);
-		Log.e("DEBUG", "--->" + r[0] + "," + r[1]);
-		params.setPreviewFpsRange(min, max);
-		mCamera.setParameters(params);
-	}
-
 	@Override
 	protected void onResume() {
 		super.onResume();
 		mOverlay.invalidate();
 		// initCamera();
 	}
+
 	@Override
 	protected void onPause() {
 		Log.d(TAG, "onPause");
@@ -302,10 +200,11 @@ public class CameraActivity extends FwActivityBase<MyApplication, CameraActivity
 		mCamera = null;
 		super.onPause();
 	}
+
 	private boolean initCamera() {
 		if (mCamera != null) return true;
 		try {
-			mCamera = CameraUtil.open();
+			//mCamera = CameraUtil.open();
 			if (mCamera == null) {
 				mModel.getDialogModel().setAlert("Error!!", "Can not open camera.", new AlertDialogListener() {
 					@Override
@@ -320,25 +219,9 @@ public class CameraActivity extends FwActivityBase<MyApplication, CameraActivity
 				update();
 				return false;
 			}
-
-			// Camera.Parameters params = mCamera.getParameters();
-			// List<Camera.Size> = params.getSupportedPictureSizes();
-			// params.setAutoExposureLock(true);
-			// params.setAutoWhiteBalanceLock(true);
-			// params.setPreviewFpsRange(1, 20);
-			// params.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
-			// params.setFocusMode(Camera.Parameters.FOCUS_MODE_MACRO);
-			// Log.e("DEBUG","===>min="+params.getMinExposureCompensation());
-			// int exposure = params.getMinExposureCompensation()
-			// + (int)((params.getMaxExposureCompensation() - params.getMinExposureCompensation())*0.02);
-			// params.setExposureCompensation(+3);
-			// params.setWhiteBalance(Camera.Parameters.WHITE_BALANCE_DAYLIGHT);
-			// mCamera.setParameters(params);
-
-			// mCamera.setDisplayOrientation(90); // portrate 固定
-			mCamera.setDisplayOrientation(getDisplayOrientation());
-			setBestFps(mCamera);
-			setPreviewAspect(mCamera);
+			CameraUtil.setupBestParameters(mCamera, this, mPreview);
+			mOverlay.setLayoutParams(mPreview.getLayoutParams());
+			mOverlay.invalidate();
 			return true;
 		} catch (Exception e) {
 			Log.e(TAG, e.toString(), e);
@@ -349,20 +232,17 @@ public class CameraActivity extends FwActivityBase<MyApplication, CameraActivity
 	private class CameraListener implements SurfaceHolder.Callback {
 		@Override
 		public void surfaceCreated(SurfaceHolder holder) {
-			if (!initCamera()) {
-				return;
-			}
+			if (!initCamera()) return;
 			try {
 				mCamera.setPreviewDisplay(holder);
 			} catch (IOException e) {
-				e.printStackTrace();
+				Log.e(TAG, "Camera error:" + e, e);
 			}
 			mCamera.startPreview();
 		}
 
 		@Override
-		public void surfaceChanged(SurfaceHolder holder, int format,
-				int width, int height) {
+		public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
 			if (mCamera == null) return;
 			mCamera.stopPreview();
 			mCamera.startPreview();
@@ -373,15 +253,12 @@ public class CameraActivity extends FwActivityBase<MyApplication, CameraActivity
 			if (mCamera != null) {
 				mCamera.stopPreview();
 			}
-			// CameraUtil.close();
-			// mCamera = null;
 		}
 	}
 
 	private class OverlayListener implements SurfaceHolder.Callback, OverlaySurfaceListener {
-		private SurfaceHolder surfaceHolder;
-
-		private Paint paint = new Paint();
+		private SurfaceHolder mSurfaceHolder;
+		private Paint mPaint = new Paint();
 		private Rect mRect = new Rect();
 
 		public OverlayListener() {
@@ -389,16 +266,16 @@ public class CameraActivity extends FwActivityBase<MyApplication, CameraActivity
 
 		@Override
 		public void surfaceCreated(SurfaceHolder holder) {
-			surfaceHolder = holder;
-			surfaceHolder.setFormat(PixelFormat.TRANSPARENT);
-			paint.setStyle(Style.STROKE);
+			mSurfaceHolder = holder;
+			mSurfaceHolder.setFormat(PixelFormat.TRANSPARENT);
+			mPaint.setStyle(Style.STROKE);
 		}
 
 		@Override
 		public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-			surfaceHolder = holder;
+			mSurfaceHolder = holder;
 			mRect = getClipRect(width, height);
-			paint.setStrokeWidth(WindowUtil.dp2px(getApplication(), 2));
+			mPaint.setStrokeWidth(WindowUtil.dp2px(getApplication(), 2));
 		}
 
 		@Override
@@ -409,12 +286,12 @@ public class CameraActivity extends FwActivityBase<MyApplication, CameraActivity
 		@SuppressLint("WrongCall")
 		public void doDraw() {
 			try {
-				Canvas canvas = surfaceHolder.lockCanvas();
+				Canvas canvas = mSurfaceHolder.lockCanvas();
 				if (canvas != null) {
 					try {
 						onDraw(canvas);
 					} finally {
-						surfaceHolder.unlockCanvasAndPost(canvas);
+						mSurfaceHolder.unlockCanvasAndPost(canvas);
 					}
 				}
 			} catch (IllegalArgumentException e) {
@@ -425,10 +302,9 @@ public class CameraActivity extends FwActivityBase<MyApplication, CameraActivity
 		@Override
 		public void onDraw(Canvas canvas) {
 			canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-			paint.setColor(Color.CYAN);
-			canvas.drawRect(mRect, paint);
+			mPaint.setColor(Color.CYAN);
+			canvas.drawRect(mRect, mPaint);
 		}
-
 	}
 
 }

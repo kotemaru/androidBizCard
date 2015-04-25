@@ -1,5 +1,5 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_above="@+id/content_root"
+        android:id="@+id/content_root"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content" >
@@ -18,51 +18,51 @@
 
             <include
                 android:id="@+id/kind_company"
-                layout="@layout/activity_edit_item" />
+                layout="@layout/editor_item" />
 
             <include
                 android:id="@+id/kind_organization"
-                layout="@layout/activity_edit_item" />
+                layout="@layout/editor_item" />
 
             <include
                 android:id="@+id/kind_position"
-                layout="@layout/activity_edit_item" />
+                layout="@layout/editor_item" />
 
             <include
                 android:id="@+id/kind_name"
-                layout="@layout/activity_edit_item" />
+                layout="@layout/editor_item" />
 
             <include
                 android:id="@+id/kind_kana"
-                layout="@layout/activity_edit_item" />
+                layout="@layout/editor_item" />
 
             <include
                 android:id="@+id/kind_address"
-                layout="@layout/activity_edit_item" />
+                layout="@layout/editor_item" />
 
             <include
                 android:id="@+id/kind_tel"
-                layout="@layout/activity_edit_item" />
+                layout="@layout/editor_item" />
 
             <include
                 android:id="@+id/kind_mobile"
-                layout="@layout/activity_edit_item" />
+                layout="@layout/editor_item" />
 
             <include
                 android:id="@+id/kind_fax"
-                layout="@layout/activity_edit_item" />
+                layout="@layout/editor_item" />
 
             <include
                 android:id="@+id/kind_email"
-                layout="@layout/activity_edit_item" />
+                layout="@layout/editor_item" />
 
             <include
                 android:id="@+id/kind_web"
-                layout="@layout/activity_edit_item" />
+                layout="@layout/editor_item" />
 
             <include
                 android:id="@+id/kind_notes"
-                layout="@layout/activity_edit_item" />
+                layout="@layout/editor_item" />
         </LinearLayout>
     </ScrollView>
 

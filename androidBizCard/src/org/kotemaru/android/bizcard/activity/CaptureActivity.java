@@ -9,10 +9,10 @@ import org.kotemaru.android.bizcard.Launcher.ExtraValue;
 import org.kotemaru.android.bizcard.MyApplication;
 import org.kotemaru.android.bizcard.R;
 import org.kotemaru.android.bizcard.controller.CaptureController;
+import org.kotemaru.android.bizcard.logic.ocr.WordInfo;
 import org.kotemaru.android.bizcard.model.CaptureActivityModel;
 import org.kotemaru.android.bizcard.model.Kind;
 import org.kotemaru.android.bizcard.util.DialogUtil;
-import org.kotemaru.android.bizcard.util.OCRUtil.WordInfo;
 import org.kotemaru.android.fw.util.WindowUtil;
 
 import android.annotation.SuppressLint;
@@ -33,7 +33,6 @@ import android.view.ScaleGestureDetector;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
-import android.view.View.OnGenericMotionListener;
 import android.view.View.OnTouchListener;
 
 public class CaptureActivity extends BaseActivity<CaptureActivityModel> {
@@ -74,8 +73,7 @@ public class CaptureActivity extends BaseActivity<CaptureActivityModel> {
 				return mScaleGestureDetector.onTouchEvent(event);
 			}
 		});
-		mMainview.setOnGenericMotionListener(mSelectorListener);
-
+		//mMainview.setOnGenericMotionListener(mSelectorListener);
 	}
 
 	@Override
@@ -112,9 +110,9 @@ public class CaptureActivity extends BaseActivity<CaptureActivityModel> {
 		MenuItemType type = MenuItemType.toMenuItemType(item.getTitle());
 		if (type == MenuItemType.EDITOR) {
 			if (mModel.getTargetKind() == Kind.NIL) { // auto setup mode
-				mController.mHandler.doAutoSetup(this, mModel.getCardBitmap());
+				mController.mHandler.doAnalyzeAll(this, mModel.getCardBitmap());
 			} else if (mSelectorListener.mSelection != null) {
-				mController.mHandler.doScan(getBaseContext(),
+				mController.mHandler.doAnalyzeOne(getBaseContext(),
 						mSelectorListener.mBitmap,
 						mSelectorListener.mSelection,
 						mModel.getTargetKind());
@@ -134,41 +132,38 @@ public class CaptureActivity extends BaseActivity<CaptureActivityModel> {
 		}
 	}
 
+	public enum DragMode {
+		NONE, SELECT_CLICK, SELECT_DRAG, CLICK, SCROLL, SCALE
+	}
+
 	private class SelectorListener
 			implements SurfaceHolder.Callback,
 			ScaleGestureDetector.OnScaleGestureListener,
-			OnGenericMotionListener, OnTouchListener
+			OnTouchListener
 	{
 		private SurfaceHolder mHolder;
 		private int mWidth, mHeight;
 		private float mFitScale;
 		private float mScale;
 		private float mCenterX = 0.5F, mCenterY = 0.5F;
+		private float mDragStartX, mDragStartY;
 
 		private Rect mSelection = new Rect();
 		private List<WordInfo> mSelectList = new ArrayList<WordInfo>();
 		private Bitmap mBitmap = null;
 		private Matrix mMatrix = new Matrix();
 		private Paint mPaint = new Paint();
-
-		// private Canvas mCanvas;
-		// private Bitmap mCancasBitmap;
-		private Handle mHandle1 = new Handle(100, 100, Color.argb(100, 0, 255, 255));
-		private Handle mHandle2 = new Handle(200, 200, Color.argb(100, 0, 255, 255));
+		private DragMode mDragMode = DragMode.NONE;
 
 		@Override
 		public void surfaceCreated(SurfaceHolder holder) {
 		}
 
 		@Override
-		public void surfaceChanged(SurfaceHolder holder, int format,
-				int width, int height) {
-			// Log.e("DEBUG", "===>surfaceChanged");
+		public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
 			mHolder = holder;
 			mWidth = width;
 			mHeight = height;
-			// mCancasBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-			// mCanvas = new Canvas(mCancasBitmap);
 			init();
 		}
 
@@ -198,7 +193,7 @@ public class CaptureActivity extends BaseActivity<CaptureActivityModel> {
 				if (canvas == null) return;
 				try {
 					canvas.save();
-					Log.e("DEBUG", "scale=" + mScale);
+					//Log.e("DEBUG", "scale=" + mScale);
 					canvas.setMatrix(null);
 					canvas.drawColor(Color.BLACK);
 
@@ -233,12 +228,6 @@ public class CaptureActivity extends BaseActivity<CaptureActivityModel> {
 						mPaint.setColor(Color.BLUE);
 						canvas.drawRect(mSelection, mPaint);
 					}
-					// if (mHandle1 != null && mHandle2 != null) {
-					// mPaint.setColor(Color.BLUE);
-					// canvas.drawRect(mHandle1.x, mHandle1.y, mHandle2.x, mHandle2.y, mPaint);
-					// }
-					// if (mHandle1 != null) mHandle1.draw(canvas);
-					// if (mHandle2 != null) mHandle2.draw(canvas);
 				} finally {
 					canvas.restore();
 					mHolder.unlockCanvasAndPost(canvas);
@@ -248,33 +237,75 @@ public class CaptureActivity extends BaseActivity<CaptureActivityModel> {
 			}
 		}
 
-		private float mDragStartX, mDragStartY;
+		@SuppressLint("ClickableViewAccessibility")
+		public boolean onTouch(View v, MotionEvent event) {
+			//Log.e("DEBUG", "===>onTouch:" + event);
+			if (event.getPointerCount() >= 2) return false;
+			if (onSelection(v, event)) {
+				draw();
+				return true;
+			}
+			return onDraggable(event);
+		}
+
+		public boolean onSelection(View v, MotionEvent event) {
+			WordInfo winfo = getWordInfo(event.getX(), event.getY());
+			boolean isSelected = mSelectList.contains(winfo);
+			//Log.e("DEBUG", "===>onSelection:"+event.getAction()+":" + winfo);
+
+			switch (event.getAction() & MotionEvent.ACTION_MASK) {
+			case MotionEvent.ACTION_DOWN:
+				if (winfo != null) {
+					mDragMode = DragMode.SELECT_CLICK;
+					return true;
+				}
+				break;
+			case MotionEvent.ACTION_MOVE:
+				if (mDragMode != DragMode.SELECT_CLICK && mDragMode != DragMode.SELECT_DRAG) break;
+				if (winfo != null && !isSelected) {
+					mSelectList.add(winfo);
+				}
+				mDragMode = DragMode.SELECT_DRAG;
+				return true;
+			case MotionEvent.ACTION_UP:
+				if (mDragMode != DragMode.SELECT_CLICK && mDragMode != DragMode.SELECT_DRAG) break;
+				if (mDragMode == DragMode.SELECT_CLICK) {
+					if (winfo != null && isSelected) {
+						mSelectList.remove(winfo);
+					} else if (winfo != null && !isSelected) {
+						mSelectList.add(winfo);
+					}
+				}
+				mDragMode = DragMode.NONE;
+				return true;
+			default:
+				break;
+			}
+			return false;
+		}
+
 
 		private boolean onDraggable(MotionEvent event) {
 			switch (event.getAction() & MotionEvent.ACTION_MASK) {
 			case MotionEvent.ACTION_DOWN:
+				mDragMode = DragMode.CLICK;
 				mDragStartX = event.getX();
 				mDragStartY = event.getY();
 				break;
 			case MotionEvent.ACTION_MOVE:
-				if (mScale > mFitScale) {
-					mCenterX += (mDragStartX - event.getX()) / mWidth;
-					mCenterY += (mDragStartY - event.getY()) / mHeight;
-
-					// Log.e("DEBUG","==>center2:"+mCenterX+","+mCenterY+":"+detector.getFocusX()+","+detector.getFocusY());
-					mCenterX = Math.max(mCenterX, 0.0F);
-					mCenterX = Math.min(mCenterX, 1.0F);
-					mCenterY = Math.max(mCenterY, 0.0F);
-					mCenterY = Math.min(mCenterY, 1.0F);
-				} else {
-					mCenterX = 0.5F;
-					mCenterY = 0.5F;
-				}
+				if (mDragMode != DragMode.CLICK && mDragMode != DragMode.SCROLL) break;
+				scroll(event.getX(), event.getY());
 				mDragStartX = event.getX();
 				mDragStartY = event.getY();
 				draw();
+				mDragMode = DragMode.SCROLL;
 				break;
 			case MotionEvent.ACTION_UP:
+				if (mDragMode == DragMode.CLICK) {
+					mSelectList.clear();
+					draw();
+				}
+				mDragMode = DragMode.NONE;
 				break;
 			default:
 				break;
@@ -282,87 +313,60 @@ public class CaptureActivity extends BaseActivity<CaptureActivityModel> {
 			return true;
 		}
 
-		private Handle mDragHandle = null;
-
-		@SuppressLint("ClickableViewAccessibility")
-		public boolean onTouch(View v, MotionEvent event) {
-			if (event.getPointerCount() >= 2) return false;
-			Log.e("DEBUG", "===>onTouch:" + event);
-			if (event.getButtonState() == MotionEvent.BUTTON_SECONDARY) {
-				return onDraggable(event);
-			}
-			int evx = (int) event.getX();
-			int evy = (int) event.getY();
-
-			int action = event.getAction() & MotionEvent.ACTION_MASK;
-			if (mDragHandle != null) {
-				mDragHandle.move(evx, evy);
-				draw();
-				if (action == MotionEvent.ACTION_UP) mDragHandle = null;
-				return true;
-			}
-			if (action == MotionEvent.ACTION_DOWN && mHandle1.contains(evx, evy)) {
-				mDragHandle = mHandle1;
-				return true;
-			}
-			if (action == MotionEvent.ACTION_DOWN && mHandle2.contains(evx, evy)) {
-				mDragHandle = mHandle2;
-				return true;
-			}
-			if (onSelection(v, event)) return true;
-			return onDraggable(event);
-			/*
-			 * switch (action) {
-			 * case MotionEvent.ACTION_DOWN:
-			 * float offsetX = (mWidth / 2) - (mBitmap.getWidth() * mCenterX * mScale);
-			 * float offsetY = (mHeight / 2) - (mBitmap.getHeight() * mCenterY * mScale);
-			 * mHandle1.x = mHandle2.x = (int) ((event.getX() - offsetX) / mScale);
-			 * mHandle1.y = mHandle2.y = (int) ((event.getY() - offsetY) / mScale);
-			 * draw();
-			 * break;
-			 * case MotionEvent.ACTION_MOVE:
-			 * offsetX = (mWidth / 2) - (mBitmap.getWidth() * mCenterX * mScale);
-			 * offsetY = (mHeight / 2) - (mBitmap.getHeight() * mCenterY * mScale);
-			 * mHandle2.x = (int) ((event.getX() - offsetX) / mScale);
-			 * mHandle2.y = (int) ((event.getY() - offsetY) / mScale);
-			 * draw();
-			 * break;
-			 * case MotionEvent.ACTION_UP:
-			 * // Log.e("DEBUG", "===>select:" + mSelection);
-			 * break;
-			 * default:
-			 * break;
-			 * }
-			 * return false;
-			 */
-		}
-
-		// for DEBUG
-		@Override
-		public boolean onGenericMotion(View v, MotionEvent event) {
-			// Log.e("DEBUG", "===>onGenericMotion:" + event.getAxisValue(MotionEvent.AXIS_VSCROLL));
-			if (event.getAction() == MotionEvent.ACTION_SCROLL) {
-				float wheel = event.getAxisValue(MotionEvent.AXIS_VSCROLL);
-				mScale += (wheel * 0.1);
-				mScale = Math.min(mFitScale * 3, mScale);
-				mScale = Math.max(mFitScale / 3, mScale);
-				draw();
-				return true;
-			}
-			return false;
-		}
 
 		// for ScaleGestureDetector.OnScaleGestureListener
 		@Override
 		public boolean onScale(ScaleGestureDetector detector) {
-			// Log.e("DEBUG", "===>onScale:" + mScale + ":" + detector.getScaleFactor() + ":" + detector.getFocusX());
 			mScale *= detector.getScaleFactor();
 			mScale = Math.min(mFitScale * 3, mScale);
 			mScale = Math.max(mFitScale / 3, mScale);
+			scroll(detector.getFocusX(), detector.getFocusY());
+			onScaleBegin(detector);
+			draw();
+			return true;
+		}
+
+		@Override
+		public boolean onScaleBegin(ScaleGestureDetector detector) {
+			mDragMode = DragMode.SCALE;
+			mDragStartX = detector.getFocusX();
+			mDragStartY = detector.getFocusY();
+			return true;
+		}
+
+		@Override
+		public void onScaleEnd(ScaleGestureDetector detector) {
+			mDragMode = DragMode.NONE;
+		}
+
+
+		//------------------------------------------------------------------------------
+		// privates
+		private int toBitmapX(float evx) {
+			float offsetX = (mWidth / 2) - (mBitmap.getWidth() * mCenterX * mScale);
+			return (int) ((evx - offsetX) / mScale);
+		}
+		private int toBitmapY(float evy) {
+			float offsetY = (mHeight / 2) - (mBitmap.getHeight() * mCenterY * mScale);
+			return (int) ((evy - offsetY) / mScale);
+		}
+
+		private WordInfo getWordInfo(float evx, float evy) {
+			List<WordInfo> words = mModel.getWordInfoList();
+			if (words == null) return null;
+			int rx = toBitmapX(evx);
+			int ry = toBitmapY(evy);
+			for (WordInfo winfo : words) {
+				if (winfo.rect.contains(rx, ry)) return winfo;
+			}
+			return null;
+		}
+
+		private void scroll(float evx, float evy) {
 			if (mScale > mFitScale) {
-				mCenterX += (mDragStartX - detector.getFocusX()) / mWidth;
-				mCenterY += (mDragStartY - detector.getFocusY()) / mHeight;
-				// Log.e("DEBUG","==>center2:"+mCenterX+","+mCenterY+":"+detector.getFocusX()+","+detector.getFocusY());
+				mCenterX += (mDragStartX - evx) / mWidth;
+				mCenterY += (mDragStartY - evy) / mHeight;
+
 				mCenterX = Math.max(mCenterX, 0.0F);
 				mCenterX = Math.min(mCenterX, 1.0F);
 				mCenterY = Math.max(mCenterY, 0.0F);
@@ -371,127 +375,6 @@ public class CaptureActivity extends BaseActivity<CaptureActivityModel> {
 				mCenterX = 0.5F;
 				mCenterY = 0.5F;
 			}
-			mDragStartX = detector.getFocusX();
-			mDragStartY = detector.getFocusY();
-			draw();
-			return true;
-		}
-
-		@Override
-		public boolean onScaleBegin(ScaleGestureDetector detector) {
-			mDragStartX = detector.getFocusX();
-			mDragStartY = detector.getFocusY();
-			return true;
-		}
-
-		@Override
-		public void onScaleEnd(ScaleGestureDetector detector) {
-		}
-
-		private class Handle {
-			int x, y; // mBitmapの座標系
-			int diffX = 40, diffY = 40; // dp
-			int size = 12; // dp
-			int color;
-
-			public Handle(int x, int y, int color) {
-				this.x = x;
-				this.y = y;
-				this.color = color;
-			}
-
-			public void draw(Canvas canvas) {
-				mPaint.setStrokeWidth(dp2px(2));
-				mPaint.setColor(color);
-				int radius = dp2px(size);
-				int cx = x + dp2px(diffX);
-				int cy = y + dp2px(diffY);
-
-				canvas.drawCircle(cx, cy, radius, mPaint);
-				radius = (int) (WindowUtil.dp2px(mContext, 4) / mScale);
-				canvas.drawCircle(cx, cy, radius, mPaint);
-				canvas.drawLine(x, y, cx, cy, mPaint);
-				mPaint.setAlpha(255);
-			}
-			private int dp2px(int dp) {
-				return (int) (WindowUtil.dp2px(mContext, dp) / mScale);
-			}
-
-			public boolean contains(int evx, int evy) {
-				evx = convertX(evx);
-				evy = convertY(evy);
-				int radius = dp2px(size * 3 / 2);
-				int cx = x + dp2px(diffX);
-				int cy = y + dp2px(diffY);
-				boolean res = (cx - radius < evx && evx < cx + radius) && (cy - radius < evy && evy < cy + radius);
-				Log.e("DEBUG", "===>contains:" + res + "=" + x + "," + y + ":" + evx + "," + evy + ":" + radius);
-				return res;
-			}
-			public void move(int evx, int evy) {
-				x = convertX(evx) - dp2px(diffX);
-				y = convertY(evy) - dp2px(diffX);
-			}
-		}
-
-		public int convertX(int evx) {
-			float offsetX = (mWidth / 2) - (mBitmap.getWidth() * mCenterX * mScale);
-			return (int) ((evx - offsetX) / mScale);
-		}
-		public int convertY(int evy) {
-			float offsetY = (mHeight / 2) - (mBitmap.getHeight() * mCenterY * mScale);
-			return (int) ((evy - offsetY) / mScale);
-		}
-
-		boolean mIsDragging = false;
-
-		public boolean onSelection(View v, MotionEvent event) {
-			List<WordInfo> words = mModel.getWordInfoList();
-			if (words == null) return false;
-			float offsetX = (mWidth / 2) - (mBitmap.getWidth() * mCenterX * mScale);
-			float offsetY = (mHeight / 2) - (mBitmap.getHeight() * mCenterY * mScale);
-			int rx = (int) ((event.getX() - offsetX) / mScale);
-			int ry = (int) ((event.getY() - offsetY) / mScale);
-			WordInfo selectWInfo = null;
-			boolean isSelected = false;
-			for (WordInfo winfo : words) {
-				if (winfo.rect.contains(rx, ry)) {
-					isSelected = mSelectList.contains(winfo);
-					selectWInfo = winfo;
-				}
-			}
-
-			switch (event.getAction() & MotionEvent.ACTION_MASK) {
-			case MotionEvent.ACTION_DOWN:
-				mIsDragging = false;
-				break;
-			case MotionEvent.ACTION_MOVE:
-				mIsDragging = true;
-				if (selectWInfo != null && !isSelected) {
-					mSelectList.add(selectWInfo);
-					draw();
-					return true;
-				}
-				break;
-			case MotionEvent.ACTION_UP:
-				if (!mIsDragging) {
-					if (selectWInfo != null) {
-						if (isSelected) {
-							mSelectList.remove(selectWInfo);
-						} else {
-							mSelectList.add(selectWInfo);
-						}
-					} else {
-						mSelectList.clear();
-					}
-					draw();
-					return true;
-				}
-				mIsDragging = false;
-				break;
-			default:
-				break;
-			}
-			return false;
 		}
 
 	}

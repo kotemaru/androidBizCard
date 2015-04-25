@@ -122,15 +122,13 @@ public class CardListActivity extends BaseActivity<CardListActivityModel> implem
 			super(context);
 			setCacheDir(new File(getFilesDir() + "/thumbnail"));
 			// setImageSize(new Point(100,100));
+			setNetworkEnabled(false);
+			setFailedImageResourceId(android.R.drawable.ic_menu_camera);
 		}
 
 		@Override
 		public File getCacheFile(CharSequence imageId) {
-			String str = "0000000000" + imageId;
-			str = str.substring(str.length() - 10);
-			File file = new File(mCacheDir, str + ".png");
-			Log.e("DEBUG", "===>getCacheFile:" + file + ":" + CardImageUtil.getThumbnailFile(mContext, 1));
-			return file;
+			return CardImageUtil.getThumbnailFile(mContext, imageId);
 		}
 	}
 
@@ -193,7 +191,7 @@ public class CardListActivity extends BaseActivity<CardListActivityModel> implem
 				holder.mOption.setText(null);
 			}
 
-			mImageLoader.setImage(holder.mThumbnail, Integer.toString(model.getId()));
+			mImageLoader.setImage(holder.mThumbnail, CardImageUtil.toStringId(model.getId()));
 			return view;
 		}
 

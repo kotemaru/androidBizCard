@@ -49,9 +49,20 @@ public enum Kind {
 		if (labelResId == ZERO) return null;
 		return context.getString(labelResId);
 	}
-	public TextView getTextView(View parent) {
+	public CharSequence getValue(CardModel model) {
+		if (model == null) return null;
+		return model.get(this);
+	}
+	public void setValue(CardModel model, CharSequence text) {
+		if (model == null) return;
+		model.put(this, text);
+	}
+	public View getView(View parent) {
 		if (viewResId == ZERO) return null;
-		return (TextView) parent.findViewById(viewResId);
+		return parent.findViewById(viewResId);
+	}
+	public TextView getTextView(View parent) {
+		return (TextView) getView(parent);
 	}
 	public String getText(View parent) {
 		TextView textView = getTextView(parent);
@@ -67,7 +78,7 @@ public enum Kind {
 	public void viewToModel(View parent, CardModel model) {
 		TextView textView = getTextView(parent);
 		if (textView == null) return;
-		model.put(this, textView.getText().toString());
+		model.put(this, textView.getText());
 	}
 	public void modelToView(CardModel model, View parent) {
 		TextView textView = getTextView(parent);

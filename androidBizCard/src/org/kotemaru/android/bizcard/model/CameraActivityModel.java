@@ -2,7 +2,7 @@ package org.kotemaru.android.bizcard.model;
 
 import java.util.List;
 
-import org.kotemaru.android.bizcard.util.OCRUtil.WordInfo;
+import org.kotemaru.android.bizcard.logic.ocr.WordInfo;
 import org.kotemaru.android.fw.FwActivityModelBase;
 
 import android.graphics.Bitmap;

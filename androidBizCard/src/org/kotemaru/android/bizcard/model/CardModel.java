@@ -8,7 +8,7 @@ public class CardModel {
 	private final CharSequence[] mValues;
 
 	public CardModel() {
-		mValues = new String[sKindValues.length];
+		mValues = new CharSequence[sKindValues.length];
 	}
 	private int getKindIndex(Kind kind) {
 		for (int i=0;i<sKindValues.length;i++) {

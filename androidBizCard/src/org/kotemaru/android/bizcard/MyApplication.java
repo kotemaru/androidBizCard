@@ -9,13 +9,12 @@ import org.kotemaru.android.fw.thread.ThreadManager;
 public class MyApplication extends FwApplicationBase<RootModel, FwActivity, RootController> {
 	private static MyApplication sInstance;
 
-	private CardDb mCardDb;
+	private CardDb mCardDb = new CardDb(this);
 
 	@Override
 	public void onCreate() {
 		super.onCreate();
 		sInstance = this;
-		mCardDb = new CardDb(this);
 	}
 
 	public static MyApplication getInstance() {
