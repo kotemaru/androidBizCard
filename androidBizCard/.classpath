@@ -10,6 +10,5 @@
 			<attribute name="optional" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry exported="true" kind="lib" path="/DelegateHandler/build/DelegateHandler-rt.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

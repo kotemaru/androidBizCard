@@ -13,8 +13,8 @@ import org.kotemaru.android.bizcard.model.CaptureActivityModel;
 import org.kotemaru.android.bizcard.model.CardHolderActivtyModel;
 import org.kotemaru.android.bizcard.model.CardModel;
 import org.kotemaru.android.bizcard.model.Kind;
-import org.kotemaru.android.delegatehandler.annotation.GenerateDelegateHandler;
-import org.kotemaru.android.delegatehandler.annotation.Handle;
+import org.kotemaru.android.fw.annotation.GenerateDelegateHandler;
+import org.kotemaru.android.fw.annotation.Handle;
 import org.kotemaru.android.fw.dialog.OnDialogCancelListener;
 import org.kotemaru.android.fw.dialog.ProgressDialogBuilder;
 import org.kotemaru.android.fw.thread.ThreadManager;
@@ -66,9 +66,13 @@ public class CaptureController extends BaseController {
 						mModel.getDialogModel().setProgress(context.getString(R.string.prog_ocr_cancel), false, null);
 					}
 				});
-		ImageAnalyzer analyzer = new ImageAnalyzer(context, bitmap);
+		ImageAnalyzer analyzer = mModel.getImageAnalyzer();
+		if (analyzer == null) {
+			analyzer = new ImageAnalyzer(context);
+			mModel.setImageAnalyzer(analyzer);
+		}
 		try {
-			analyzer.init(progress, true);
+			analyzer.init(bitmap, progress);
 			mModel.writeLock();
 			try {
 				mModel.setWordInfoList(analyzer.mDataSetJpn.words);
@@ -86,16 +90,16 @@ public class CaptureController extends BaseController {
 			Launcher.startEditor(context, ExtraValue.AUTO_SETUP, -1);
 		} finally {
 			mModel.getDialogModel().clear();
-			analyzer.close();
+			analyzer.release();
 		}
 	}
 
 	@Handle(thread = ThreadManager.WORKER)
 	void doAnalyzeOne(Context context, Bitmap bitmap, Rect rect, Kind kind) throws IOException {
-		ProgressDialogBuilder progress = mModel.getDialogModel().setProgress(context.getString(R.string.prog_ocr_1), false, null);
-		ImageAnalyzer analyzer = new ImageAnalyzer(context, bitmap);
+		mModel.getDialogModel().setProgress(context.getString(R.string.prog_ocr_1), false, null);
+		ImageAnalyzer analyzer = mModel.getImageAnalyzer();
+		analyzer.setBitmap(bitmap);
 		try {
-			analyzer.init(progress, false);
 			CardImageAnalyzer cardAnalyzer = new CardImageAnalyzer(context, analyzer);
 
 			CardModel cardModel = new CardModel();
@@ -111,7 +115,7 @@ public class CaptureController extends BaseController {
 			getFwApplication().goBackActivity(EditorActivity.class);
 		} finally {
 			mModel.getDialogModel().clear();
-			analyzer.close();
+			analyzer.release();
 		}
 	}
 

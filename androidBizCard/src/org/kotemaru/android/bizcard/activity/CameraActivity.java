@@ -204,7 +204,7 @@ public class CameraActivity extends FwActivityBase<MyApplication, CameraActivity
 	private boolean initCamera() {
 		if (mCamera != null) return true;
 		try {
-			//mCamera = CameraUtil.open();
+			mCamera = CameraUtil.open();
 			if (mCamera == null) {
 				mModel.getDialogModel().setAlert("Error!!", "Can not open camera.", new AlertDialogListener() {
 					@Override
@@ -222,6 +222,12 @@ public class CameraActivity extends FwActivityBase<MyApplication, CameraActivity
 			CameraUtil.setupBestParameters(mCamera, this, mPreview);
 			mOverlay.setLayoutParams(mPreview.getLayoutParams());
 			mOverlay.invalidate();
+
+			Camera.Parameters params = mCamera.getParameters();
+			// 露出最大/2
+			params.setExposureCompensation(params.getMaxExposureCompensation()/2);
+			//params.setFlashMode(Camera.Parameters.FLASH_MODE_ON);
+			mCamera.setParameters(params);
 			return true;
 		} catch (Exception e) {
 			Log.e(TAG, e.toString(), e);

@@ -33,9 +33,10 @@ public class ImageAnalyzer {
 	public final DataSet mDataSetJpn = new DataSet(JPN, 50);
 	public final DataSet mDataSetEng = new DataSet(ENG, 60);
 
-	public ImageAnalyzer(Context context, Bitmap bitmap) {
+	public ImageAnalyzer(Context context) throws IOException {
 		mContext = context;
-		mBitmap = bitmap;
+		prepare(mDataSetJpn);
+		prepare(mDataSetEng);
 	}
 
 	public class DataSet {
@@ -82,28 +83,39 @@ public class ImageAnalyzer {
 	}
 
 
-	public void init(ProgressDialogBuilder progress, boolean isFull) throws IOException {
-		init(mDataSetJpn, isFull);
+	public void init(Bitmap bitmap, ProgressDialogBuilder progress) throws IOException {
+		mBitmap = bitmap;
+		init(mDataSetJpn);
 		if (progress.isCancelled()) return;
-		init(mDataSetEng, isFull);
+		init(mDataSetEng);
 	}
+	public void release() {
+		mBitmap = null;
+	}
+
+
 	public void close() {
 		mDataSetJpn.tessApi.end();
 		if (mDataSetEng.tessApi != null) mDataSetEng.tessApi.end();
 	}
 
-
-	private void init(DataSet dataSet, boolean isFull) throws IOException {
+	private void prepare(DataSet dataSet) throws IOException {
 		String path = initTrainedData(mContext, dataSet.lang);
 		dataSet.path = path;
 		dataSet.tessApi = new TessBaseAPI();
 		dataSet.tessApi.init(path, dataSet.lang);
-		if (!isFull) return;
+	}
+
+	private void init(DataSet dataSet) {
 		dataSet.tessApi.setImage(mBitmap);
 		dataSet.text = dataSet.tessApi.getUTF8Text();
 		dataSet.words = getWords(dataSet);
 		//dataSet.tessApi.end();
 	}
+	public void setBitmap(Bitmap bitmap) {
+		mBitmap = bitmap;
+	}
+
 
 	private List<WordInfo> getWords(DataSet dataSet) {
 		ResultIterator ite = dataSet.tessApi.getResultIterator();
@@ -169,7 +181,8 @@ public class ImageAnalyzer {
 		StringBuilder sbuf = new StringBuilder();
 		for (WordInfo winfo : list) {
 			char ch = winfo.word.charAt(0);
-			if (ch == '一' || ch == 'ー' || ch == '－' || ch == '。' || ch == '○') {
+			if (ch == '一' || ch == 'ー' || ch == '－' || ch == '。'
+					|| ch == '○' || ch == '～' || ch == '◯') {
 				mDataSetEng.tessApi.setRectangle(winfo.rect);
 				String word = mDataSetEng.tessApi.getUTF8Text();
 				if (word != null && !word.isEmpty()) {

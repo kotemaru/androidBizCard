@@ -161,7 +161,7 @@ public class CardListActivity extends BaseActivity<CardListActivityModel> implem
 			return mCardModelList.get(position).getId();
 		}
 
-		@SuppressLint("InflateParams")
+		@SuppressLint({ "InflateParams", "ClickableViewAccessibility" })
 		@Override
 		public View getView(int position, View view, ViewGroup parent) {
 			if (view == null) {
@@ -170,7 +170,6 @@ public class CardListActivity extends BaseActivity<CardListActivityModel> implem
 				view.setOnTouchListener(new OnTouchListener() {
 					@Override
 					public boolean onTouch(View v, MotionEvent event) {
-						Log.e("DEBUG", "###onTOuce:listitem");
 						ViewHolder holder = (ViewHolder) v.getTag();
 						mCardGestureListener.setCardModel(holder.mCardModel);
 						return false;

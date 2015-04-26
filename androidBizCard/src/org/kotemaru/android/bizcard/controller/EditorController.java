@@ -8,8 +8,8 @@ import org.kotemaru.android.bizcard.model.CardHolderActivtyModel;
 import org.kotemaru.android.bizcard.model.CardModel;
 import org.kotemaru.android.bizcard.model.Kind;
 import org.kotemaru.android.bizcard.util.CardImageUtil;
-import org.kotemaru.android.delegatehandler.annotation.GenerateDelegateHandler;
-import org.kotemaru.android.delegatehandler.annotation.Handle;
+import org.kotemaru.android.fw.annotation.GenerateDelegateHandler;
+import org.kotemaru.android.fw.annotation.Handle;
 import org.kotemaru.android.fw.thread.ThreadManager;
 
 import android.app.Activity;

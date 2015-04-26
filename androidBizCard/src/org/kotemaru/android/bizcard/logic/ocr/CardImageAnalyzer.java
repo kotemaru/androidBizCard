@@ -5,14 +5,13 @@ import java.io.IOException;
 import org.kotemaru.android.bizcard.R;
 import org.kotemaru.android.bizcard.model.CardModel;
 import org.kotemaru.android.bizcard.model.Kind;
-import org.kotemaru.android.delegatehandler.annotation.GenerateDelegateHandler;
 import org.kotemaru.android.fw.dialog.ProgressDialogBuilder;
 
 import android.content.Context;
 import android.graphics.Rect;
 
-@GenerateDelegateHandler
 public class CardImageAnalyzer {
+	public static final String TAG = CardImageAnalyzer.class.getSimpleName();
 	private final Context mContext;
 	private final ImageAnalyzer mImageAnalyzer;
 

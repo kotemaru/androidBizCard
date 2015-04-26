@@ -2,6 +2,7 @@ package org.kotemaru.android.bizcard.model;
 
 import java.util.List;
 
+import org.kotemaru.android.bizcard.logic.ocr.ImageAnalyzer;
 import org.kotemaru.android.bizcard.logic.ocr.WordInfo;
 import org.kotemaru.android.fw.FwActivityModelBase;
 
@@ -12,6 +13,7 @@ public class CaptureActivityModel extends FwActivityModelBase {
 	private List<WordInfo> mWordInfoList;
 	private WordInfo mSelectWordInfo;
 	private Kind mTargetKind;
+	private ImageAnalyzer mImageAnalyzer;
 
 	public Bitmap getCardBitmap() {
 		return mCardBitmap;
@@ -43,6 +45,14 @@ public class CaptureActivityModel extends FwActivityModelBase {
 
 	public void setTargetKind(Kind targetKind) {
 		mTargetKind = targetKind;
+	}
+
+	public ImageAnalyzer getImageAnalyzer() {
+		return mImageAnalyzer;
+	}
+
+	public void setImageAnalyzer(ImageAnalyzer imageAnalyzer) {
+		mImageAnalyzer = imageAnalyzer;
 	}
 
 }

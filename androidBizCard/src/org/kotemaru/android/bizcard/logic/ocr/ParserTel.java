@@ -47,6 +47,8 @@ public class ParserTel implements Parser {
 		if (m.find()) {
 			String word = text.substring(m.start(), m.end());
 			model.put(getKind(), word);
+		} else {
+			model.put(getKind(), text);
 		}
 	}
 }

@@ -1,7 +1,8 @@
 <factorypath>
     <factorypathentry kind="PLUGIN" id="org.eclipse.jst.ws.annotations.core" enabled="true" runInBatchMode="false"/>
-    <factorypathentry kind="WKSPJAR" id="/DelegateHandler/libs/commons-collections-3.2.1.jar" enabled="true" runInBatchMode="false"/>
-    <factorypathentry kind="WKSPJAR" id="/DelegateHandler/libs/commons-lang-2.4.jar" enabled="true" runInBatchMode="false"/>
-    <factorypathentry kind="WKSPJAR" id="/DelegateHandler/libs/velocity-1.7.jar" enabled="true" runInBatchMode="false"/>
-    <factorypathentry kind="WKSPJAR" id="/androidBizCard/tools/DelegateHandler-apt.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="WKSPJAR" id="/androidFwApt/libs/commons-collections-3.2.1.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="WKSPJAR" id="/androidFwApt/libs/commons-lang-2.4.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="WKSPJAR" id="/androidFwApt/libs/velocity-1.7.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="WKSPJAR" id="/androidFW/bin/androidfw.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="WKSPJAR" id="/androidFwApt/build/androidfw-apt.jar" enabled="true" runInBatchMode="false"/>
 </factorypath>

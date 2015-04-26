@@ -71,8 +71,10 @@ public class CardDb {
 		public void put(ContentValues values, long val) {values.put(name(), val);}
 		public void put(ContentValues values, int val) {values.put(name(), val);}
 		public void put(ContentValues values, String val) {values.put(name(), val);}
-		public void put(ContentValues values, CharSequence val) {values.put(name(), val.toString());}
 		// @formatter:on
+		public void put(ContentValues values, CharSequence val) {
+			values.put(name(), val == null ? null : val.toString());
+		}
 	}
 
 	private static class SqlHelper extends SQLiteOpenHelper {
