@@ -13,7 +13,13 @@
     <string name="title_card_list">名刺一覧</string>
     <string name="title_viewer">名刺詳細</string>
     <string name="title_editor">名刺編集</string>
-    <string name="title_capture">範囲選択</string>
+    <string name="title_capture">名刺画像</string>
+
+    <!-- メニュー -->
+    <string name="menu_search">検索</string>
+    <string name="menu_camra">カメラ</string>
+    <string name="menu_register">登録</string>
+    <string name="menu_edit">編集</string>
 
     <!-- 属性名 -->
     <string name="kind_access_date">連絡日</string>

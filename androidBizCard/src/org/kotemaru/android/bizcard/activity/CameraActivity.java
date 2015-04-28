@@ -10,7 +10,7 @@ import org.kotemaru.android.bizcard.model.CameraActivityModel;
 import org.kotemaru.android.bizcard.util.CameraUtil;
 import org.kotemaru.android.bizcard.widget.OverlaySurfaceView;
 import org.kotemaru.android.bizcard.widget.OverlaySurfaceView.OverlaySurfaceListener;
-import org.kotemaru.android.fw.FwActivityBase;
+import org.kotemaru.android.fw.base.FwActivityBase;
 import org.kotemaru.android.fw.dialog.AlertDialogListener;
 import org.kotemaru.android.fw.util.WindowUtil;
 
@@ -84,7 +84,7 @@ public class CameraActivity extends FwActivityBase<MyApplication, CameraActivity
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_camera);
-		mModel = new CameraActivityModel();
+		mModel = getFwApplication().getModel().getCameraModel();
 		sPictureBitmap = null;
 
 		mPreview = (SurfaceView) findViewById(R.id.preview);
@@ -165,7 +165,7 @@ public class CameraActivity extends FwActivityBase<MyApplication, CameraActivity
 
 	@SuppressLint("WrongCall")
 	@Override
-	public void onUpdateInReadLocked(CameraActivityModel model) {
+	public void onUpdate(CameraActivityModel model) {
 		// mOverlayListener.onDraw();
 	}
 

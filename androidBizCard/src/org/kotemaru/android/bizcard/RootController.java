@@ -4,9 +4,8 @@ import org.kotemaru.android.bizcard.controller.CaptureController;
 import org.kotemaru.android.bizcard.controller.CardListController;
 import org.kotemaru.android.bizcard.controller.EditorController;
 import org.kotemaru.android.bizcard.controller.ViewerController;
-import org.kotemaru.android.fw.FwControllerBase;
 
-public class RootController extends FwControllerBase<MyApplication> {
+public class RootController extends org.kotemaru.android.fw.base.FwControllerBase<MyApplication> {
 	private final CaptureController mCaptureController;
 	private final CardListController mCardListController;
 	private final ViewerController mViewerController;

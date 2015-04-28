@@ -7,7 +7,6 @@ import org.kotemaru.android.bizcard.R;
 import org.kotemaru.android.bizcard.database.CardDb;
 import org.kotemaru.android.bizcard.model.CardListActivityModel;
 import org.kotemaru.android.bizcard.model.CardModel;
-import org.kotemaru.android.bizcard.util.DialogUtil;
 import org.kotemaru.android.fw.annotation.GenerateDelegateHandler;
 import org.kotemaru.android.fw.annotation.Handle;
 import org.kotemaru.android.fw.thread.ThreadManager;
@@ -35,7 +34,7 @@ public class CardListController extends BaseController {
 			mModel.writeUnlock();
 		}
 		if (list.size() == 0) {
-			DialogUtil.setInformationIfRequire(mModel.getDialogModel(), R.string.info_register);
+			mModel.getDialogModel().setInformationIfRequire(R.string.info_register);
 		}
 		getFwApplication().updateCurrentActivity();
 	}

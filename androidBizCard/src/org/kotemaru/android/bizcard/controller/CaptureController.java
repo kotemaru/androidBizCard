@@ -56,7 +56,7 @@ public class CaptureController extends BaseController {
 	boolean mIsCancelled = false;
 
 	@Handle(thread = ThreadManager.WORKER)
-	void doAnalyzeAll(final Context context, Bitmap bitmap) throws IOException {
+	void doAnalyzeAll(final Context context, Bitmap bitmap, boolean isInitOnly) throws IOException {
 		if (bitmap == null) return;
 		ProgressDialogBuilder progress = mModel.getDialogModel().setProgress(context.getString(R.string.prog_ocr_1), true,
 				new OnDialogCancelListener() {
@@ -80,6 +80,7 @@ public class CaptureController extends BaseController {
 				mModel.writeUnlock();
 			}
 
+			if (isInitOnly) return;
 			if (progress.isCancelled()) return;
 			progress.setMessage(context.getString(R.string.prog_ocr_2));
 			CardImageAnalyzer cardAnalyzer = new CardImageAnalyzer(context, analyzer);

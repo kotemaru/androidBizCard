@@ -22,7 +22,7 @@ public class Launcher {
 	}
 
 	public enum ExtraValue {
-		NIL, INIT, WITH_TARGET, AUTO_SETUP;
+		NIL, INIT, VIEW, WITH_TARGET, AUTO_SETUP;
 
 		public static ExtraValue toExtraValue(String name) {
 			if (name == null) return ExtraValue.NIL;

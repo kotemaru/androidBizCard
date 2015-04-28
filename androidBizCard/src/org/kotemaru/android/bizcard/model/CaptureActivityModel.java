@@ -4,16 +4,31 @@ import java.util.List;
 
 import org.kotemaru.android.bizcard.logic.ocr.ImageAnalyzer;
 import org.kotemaru.android.bizcard.logic.ocr.WordInfo;
-import org.kotemaru.android.fw.FwActivityModelBase;
+import org.kotemaru.android.fw.ModelLock;
 
 import android.graphics.Bitmap;
 
-public class CaptureActivityModel extends FwActivityModelBase {
+public class CaptureActivityModel extends BaseActivityModel {
 	private Bitmap mCardBitmap = null;
 	private List<WordInfo> mWordInfoList;
-	private WordInfo mSelectWordInfo;
 	private Kind mTargetKind;
 	private ImageAnalyzer mImageAnalyzer;
+	private boolean mIsEditMode = false;
+
+	public CaptureActivityModel(ModelLock parentLock) {
+		super(parentLock);
+	}
+
+	public void reset(Bitmap cardBitmap) {
+		writeLock();
+		try {
+			setCardBitmap(cardBitmap);
+			setWordInfoList(null);
+			setEditMode(false);
+		} finally {
+			writeUnlock();
+		}
+	}
 
 	public Bitmap getCardBitmap() {
 		return mCardBitmap;
@@ -31,14 +46,6 @@ public class CaptureActivityModel extends FwActivityModelBase {
 		mWordInfoList = wordInfoList;
 	}
 
-	public WordInfo getSelectWordInfo() {
-		return mSelectWordInfo;
-	}
-
-	public void setSelectWordInfo(WordInfo selectWordInfo) {
-		mSelectWordInfo = selectWordInfo;
-	}
-
 	public Kind getTargetKind() {
 		return mTargetKind;
 	}
@@ -53,6 +60,14 @@ public class CaptureActivityModel extends FwActivityModelBase {
 
 	public void setImageAnalyzer(ImageAnalyzer imageAnalyzer) {
 		mImageAnalyzer = imageAnalyzer;
+	}
+
+	public boolean isEditMode() {
+		return mIsEditMode;
+	}
+
+	public void setEditMode(boolean isEditMode) {
+		mIsEditMode = isEditMode;
 	}
 
 }

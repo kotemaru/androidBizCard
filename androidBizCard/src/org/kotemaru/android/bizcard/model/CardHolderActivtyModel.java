@@ -1,9 +1,13 @@
 package org.kotemaru.android.bizcard.model;
 
-import org.kotemaru.android.fw.FwActivityModelBase;
+import org.kotemaru.android.fw.ModelLock;
 
-public class CardHolderActivtyModel extends FwActivityModelBase {
+public class CardHolderActivtyModel extends BaseActivityModel {
 	private CardModel mCardModel;
+
+	public CardHolderActivtyModel(ModelLock parentLock) {
+		super(parentLock);
+	}
 
 	public CardModel getCardModel() {
 		return mCardModel;

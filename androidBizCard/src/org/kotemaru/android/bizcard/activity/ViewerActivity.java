@@ -1,6 +1,7 @@
 package org.kotemaru.android.bizcard.activity;
 
 import org.kotemaru.android.bizcard.Launcher;
+import org.kotemaru.android.bizcard.Launcher.ExtraValue;
 import org.kotemaru.android.bizcard.MyApplication;
 import org.kotemaru.android.bizcard.R;
 import org.kotemaru.android.bizcard.controller.ViewerController;
@@ -53,7 +54,7 @@ public class ViewerActivity extends BaseActivity<CardHolderActivtyModel> impleme
 		thumbnail.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				Launcher.startCapture(ViewerActivity.this);
+				Launcher.startCapture(ViewerActivity.this, ExtraValue.VIEW, Kind.NIL);
 			}
 		});
 	}
@@ -75,7 +76,7 @@ public class ViewerActivity extends BaseActivity<CardHolderActivtyModel> impleme
 	}
 
 	@Override
-	public void onUpdateInReadLocked(CardHolderActivtyModel model) {
+	public void onUpdate(CardHolderActivtyModel model) {
 		modelToView(mModel.getCardModel());
 	}
 
@@ -92,7 +93,7 @@ public class ViewerActivity extends BaseActivity<CardHolderActivtyModel> impleme
 		ImageView thumnail = (ImageView) findViewById(R.id.thumbnail);
 		Bitmap bitmap = CardImageUtil.loadThumbnail(this, mCurrentCardId); // TODO worker
 		thumnail.setImageBitmap(bitmap);
-		getFwApplication().getModel().getCaptureModel().setCardBitmap(bitmap);
+		getFwApplication().getModel().getCaptureModel().reset(bitmap);
 	}
 
 }

@@ -8,11 +8,11 @@ import org.kotemaru.android.bizcard.Launcher.ExtraKey;
 import org.kotemaru.android.bizcard.Launcher.ExtraValue;
 import org.kotemaru.android.bizcard.MyApplication;
 import org.kotemaru.android.bizcard.R;
+import org.kotemaru.android.bizcard.RootModel;
 import org.kotemaru.android.bizcard.controller.EditorController;
 import org.kotemaru.android.bizcard.model.CardHolderActivtyModel;
 import org.kotemaru.android.bizcard.model.CardModel;
 import org.kotemaru.android.bizcard.model.Kind;
-import org.kotemaru.android.bizcard.util.DialogUtil;
 import org.kotemaru.android.fw.FwActivity;
 
 import android.content.Intent;
@@ -60,20 +60,28 @@ public class EditorActivity extends BaseActivity<CardHolderActivtyModel> impleme
 		switch (editorMode) {
 		case INIT:
 			Log.i(TAG, "onResume:reset data");
-			mCurrentCardId = intent.getExtras().getInt(Launcher.ExtraKey.ID.name());
-			if (mCurrentCardId == -1) {
-				DialogUtil.setInformationIfRequire(mModel.getDialogModel(), R.string.info_editor_camera);
-				mModel.setCardModel(new CardModel());
-			} else {
-				mController.mHandler.loadCard(mCurrentCardId);
+			RootModel rootModel = getFwApplication().getModel();
+			rootModel.writeLock();
+			try {
+				mCurrentCardId = intent.getExtras().getInt(Launcher.ExtraKey.ID.name());
+				if (mCurrentCardId == -1) {
+					mModel.getDialogModel().setInformationIfRequire(R.string.info_editor_camera);
+					mModel.setCardModel(new CardModel());
+				} else {
+					mController.mHandler.loadCard(mCurrentCardId);
+				}
+				rootModel.getCaptureModel().reset(null);
+			} finally {
+				rootModel.writeUnlock();
 			}
 			break;
 		case AUTO_SETUP:
-			DialogUtil.setInformationIfRequire(mModel.getDialogModel(), R.string.info_after_auto_setup);
+			mModel.getDialogModel().setInformationIfRequire(R.string.info_after_auto_setup);
 			break;
 		default:
 			break;
 		}
+		intent.removeExtra(ExtraKey.EDITOR_MODE.name());
 	}
 
 	@Override
@@ -83,7 +91,7 @@ public class EditorActivity extends BaseActivity<CardHolderActivtyModel> impleme
 	}
 
 	@Override
-	public void onUpdateInReadLocked(CardHolderActivtyModel model) {
+	public void onUpdate(CardHolderActivtyModel model) {
 		modelToView(mModel.getCardModel());
 	}
 	@Override
@@ -95,7 +103,7 @@ public class EditorActivity extends BaseActivity<CardHolderActivtyModel> impleme
 		Log.i(TAG, "onActivityResult:" + requestCode + "," + resultCode);
 		if (requestCode == Launcher.CAMERA_REQUEST_CODE && resultCode == RESULT_OK) {
 			Bitmap bitmap = CameraActivity.takePictureBitmap();
-			getFwApplication().getModel().getCaptureModel().setCardBitmap(bitmap);
+			getFwApplication().getModel().getCaptureModel().reset(bitmap);
 			Launcher.startCapture(this, ExtraValue.AUTO_SETUP, Kind.NIL);
 		}
 	}

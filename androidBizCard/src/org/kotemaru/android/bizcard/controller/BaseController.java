@@ -1,7 +1,7 @@
 package org.kotemaru.android.bizcard.controller;
 
 import org.kotemaru.android.bizcard.MyApplication;
-import org.kotemaru.android.fw.FwControllerBase;
+import org.kotemaru.android.fw.base.FwControllerBase;
 import org.kotemaru.android.fw.thread.DelegateHandlerError;
 import org.kotemaru.android.fw.thread.OnDelegateHandlerErrorListener;
 import org.kotemaru.android.fw.thread.ThreadManager;

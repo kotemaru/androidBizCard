@@ -63,6 +63,10 @@ public class CardImageUtil {
 		sbuf.append(id);
 		return sbuf.subSequence(sbuf.length()-10, sbuf.length());
 	}
+	public static boolean hasThumbnail(Context context, int id) {
+		File file = getThumbnailFile(context, id);
+		return file.canRead();
+	}
 
 	public static Bitmap toThumbnail(Bitmap bitmap) {
 		int height = bitmap.getHeight();

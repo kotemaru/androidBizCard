@@ -52,8 +52,9 @@ public class EditorController extends BaseController {
 		//model.setId(mCurrentCardId);
 
 		try {
+			boolean hasThumbnail = CardImageUtil.hasThumbnail(getFwApplication(), id);
 			Bitmap bitmap = getFwApplication().getModel().getCaptureModel().getCardBitmap();
-			if (bitmap != null) {
+			if (bitmap != null&& !hasThumbnail) {
 				String url = CardImageUtil.saveThumbnail(getFwApplication(), id, bitmap);
 				model.put(Kind.IMAGE_URL, url); // 意味なし
 			}

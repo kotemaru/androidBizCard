@@ -12,7 +12,6 @@ import org.kotemaru.android.bizcard.controller.CaptureController;
 import org.kotemaru.android.bizcard.logic.ocr.WordInfo;
 import org.kotemaru.android.bizcard.model.CaptureActivityModel;
 import org.kotemaru.android.bizcard.model.Kind;
-import org.kotemaru.android.bizcard.util.DialogUtil;
 import org.kotemaru.android.fw.util.WindowUtil;
 
 import android.annotation.SuppressLint;
@@ -73,29 +72,46 @@ public class CaptureActivity extends BaseActivity<CaptureActivityModel> {
 				return mScaleGestureDetector.onTouchEvent(event);
 			}
 		});
-		//mMainview.setOnGenericMotionListener(mSelectorListener);
+		// mMainview.setOnGenericMotionListener(mSelectorListener);
 	}
 
 	@Override
 	protected void onLaunch(Intent intent) {
 		ExtraValue mode = ExtraValue.toExtraValue(intent.getStringExtra(ExtraKey.CAPTURE_MODE.name()));
 		Kind kind = Kind.toKind(intent.getStringExtra(ExtraKey.KIND.name()));
-		switch (mode) {
-		case WITH_TARGET:
-			DialogUtil.setInformationIfRequire(mModel.getDialogModel(), R.string.info_select_chars);
-			mModel.setTargetKind(kind);
-			break;
-		case AUTO_SETUP:
-			DialogUtil.setInformationIfRequire(mModel.getDialogModel(), R.string.info_capture_camera);
-			mModel.setTargetKind(Kind.NIL);
-			break;
-		default:
-			break;
+		mModel.writeLock();
+		try {
+			switch (mode) {
+			case WITH_TARGET:
+				if (mModel.getWordInfoList() == null) {
+					mController.mHandler.doAnalyzeAll(this, mModel.getCardBitmap(), true);
+				} else {
+					mModel.getDialogModel().setInformationIfRequire(R.string.info_select_chars);
+				}
+				mModel.setTargetKind(kind);
+				mModel.setEditMode(true);
+				break;
+			case AUTO_SETUP:
+				mModel.setWordInfoList(null);
+				// DialogUtil.setInformationIfRequire(mModel.getDialogModel(), R.string.info_capture_camera);
+				mModel.setTargetKind(Kind.NIL);
+				mModel.setEditMode(true);
+				mController.mHandler.doAnalyzeAll(this, mModel.getCardBitmap(), false);
+				break;
+			case VIEW:
+				mModel.setWordInfoList(null);
+				mModel.setEditMode(false);
+			default:
+				break;
+			}
+		} finally {
+			mModel.writeUnlock();
 		}
+		intent.removeExtra(ExtraKey.CAPTURE_MODE.name());
 	}
 
 	@Override
-	public void onUpdateInReadLocked(CaptureActivityModel model) {
+	public void onUpdate(CaptureActivityModel model) {
 		mSelectorListener.setBitmap(mModel.getCardBitmap());
 		mSelectorListener.draw();
 	}
@@ -104,13 +120,21 @@ public class CaptureActivity extends BaseActivity<CaptureActivityModel> {
 	public boolean onCreateOptionsMenu(Menu menu) {
 		return createOptionsMenu(menu, MenuItemType.EDITOR, MenuItemType.CAMERA);
 	}
+	@Override
+	public boolean onPrepareOptionsMenu(Menu menu) {
+		for (int i = 0; i < menu.size(); i++) {
+			MenuItem item = menu.getItem(i);
+			item.setVisible(mModel.isEditMode());
+		}
+		return true;
+	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		MenuItemType type = MenuItemType.toMenuItemType(item.getTitle());
+		MenuItemType type = MenuItemType.toMenuItemType(item.getItemId());
 		if (type == MenuItemType.EDITOR) {
 			if (mModel.getTargetKind() == Kind.NIL) { // auto setup mode
-				mController.mHandler.doAnalyzeAll(this, mModel.getCardBitmap());
+				// mController.mHandler.doAnalyzeAll(this, mModel.getCardBitmap());
 			} else if (mSelectorListener.mSelection != null) {
 				mController.mHandler.doAnalyzeOne(getBaseContext(),
 						mSelectorListener.mBitmap,
@@ -127,7 +151,7 @@ public class CaptureActivity extends BaseActivity<CaptureActivityModel> {
 		super.onActivityResult(requestCode, resultCode, data);
 		if (requestCode == Launcher.CAMERA_REQUEST_CODE && resultCode == RESULT_OK) {
 			Bitmap bitmap = CameraActivity.takePictureBitmap();
-			mModel.setCardBitmap(bitmap);
+			mModel.reset(bitmap);
 			Launcher.startCapture(this, ExtraValue.AUTO_SETUP, Kind.NIL);
 		}
 	}
@@ -193,7 +217,7 @@ public class CaptureActivity extends BaseActivity<CaptureActivityModel> {
 				if (canvas == null) return;
 				try {
 					canvas.save();
-					//Log.e("DEBUG", "scale=" + mScale);
+					// Log.e("DEBUG", "scale=" + mScale);
 					canvas.setMatrix(null);
 					canvas.drawColor(Color.BLACK);
 
@@ -239,7 +263,7 @@ public class CaptureActivity extends BaseActivity<CaptureActivityModel> {
 
 		@SuppressLint("ClickableViewAccessibility")
 		public boolean onTouch(View v, MotionEvent event) {
-			//Log.e("DEBUG", "===>onTouch:" + event);
+			// Log.e("DEBUG", "===>onTouch:" + event);
 			if (event.getPointerCount() >= 2) return false;
 			if (onSelection(v, event)) {
 				draw();
@@ -251,7 +275,7 @@ public class CaptureActivity extends BaseActivity<CaptureActivityModel> {
 		public boolean onSelection(View v, MotionEvent event) {
 			WordInfo winfo = getWordInfo(event.getX(), event.getY());
 			boolean isSelected = mSelectList.contains(winfo);
-			//Log.e("DEBUG", "===>onSelection:"+event.getAction()+":" + winfo);
+			// Log.e("DEBUG", "===>onSelection:"+event.getAction()+":" + winfo);
 
 			switch (event.getAction() & MotionEvent.ACTION_MASK) {
 			case MotionEvent.ACTION_DOWN:
@@ -284,7 +308,6 @@ public class CaptureActivity extends BaseActivity<CaptureActivityModel> {
 			return false;
 		}
 
-
 		private boolean onDraggable(MotionEvent event) {
 			switch (event.getAction() & MotionEvent.ACTION_MASK) {
 			case MotionEvent.ACTION_DOWN:
@@ -313,7 +336,6 @@ public class CaptureActivity extends BaseActivity<CaptureActivityModel> {
 			return true;
 		}
 
-
 		// for ScaleGestureDetector.OnScaleGestureListener
 		@Override
 		public boolean onScale(ScaleGestureDetector detector) {
@@ -339,8 +361,7 @@ public class CaptureActivity extends BaseActivity<CaptureActivityModel> {
 			mDragMode = DragMode.NONE;
 		}
 
-
-		//------------------------------------------------------------------------------
+		// ------------------------------------------------------------------------------
 		// privates
 		private int toBitmapX(float evx) {
 			float offsetX = (mWidth / 2) - (mBitmap.getWidth() * mCenterX * mScale);

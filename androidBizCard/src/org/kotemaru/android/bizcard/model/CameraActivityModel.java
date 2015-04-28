@@ -3,12 +3,12 @@ package org.kotemaru.android.bizcard.model;
 import java.util.List;
 
 import org.kotemaru.android.bizcard.logic.ocr.WordInfo;
-import org.kotemaru.android.fw.FwActivityModelBase;
+import org.kotemaru.android.fw.ModelLock;
 
 import android.graphics.Bitmap;
 import android.hardware.Camera.Parameters;
 
-public class CameraActivityModel extends FwActivityModelBase {
+public class CameraActivityModel extends BaseActivityModel {
 	private Bitmap mCardBitmap = null;
 	private int mExposure = 0;
 	private String mFocusMode = Parameters.FOCUS_MODE_AUTO;
@@ -16,6 +16,10 @@ public class CameraActivityModel extends FwActivityModelBase {
 	private List<WordInfo> mWordInfoList;
 	private WordInfo mSelectWordInfo;
 	private boolean mIsPreviewMode;
+
+	public CameraActivityModel(ModelLock parentLock) {
+		super(parentLock);
+	}
 
 	public Bitmap getCardBitmap() {
 		return mCardBitmap;
@@ -72,5 +76,6 @@ public class CameraActivityModel extends FwActivityModelBase {
 	public void setPreviewMode(boolean isPreviewMode) {
 		mIsPreviewMode = isPreviewMode;
 	}
+
 
 }

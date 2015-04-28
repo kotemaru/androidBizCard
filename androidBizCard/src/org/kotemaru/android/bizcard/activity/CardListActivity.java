@@ -94,7 +94,7 @@ public class CardListActivity extends BaseActivity<CardListActivityModel> implem
 	}
 
 	@Override
-	public void onUpdateInReadLocked(CardListActivityModel model) {
+	public void onUpdate(CardListActivityModel model) {
 		if (mModel.getCardModelList() != mCardListAdapter.getCardModelList()) {
 			mCardListAdapter.setCardModelList(mModel.getCardModelList());
 		}

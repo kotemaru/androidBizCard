@@ -2,11 +2,15 @@ package org.kotemaru.android.bizcard.model;
 
 import java.util.List;
 
-import org.kotemaru.android.fw.FwActivityModelBase;
+import org.kotemaru.android.fw.ModelLock;
 
-public class CardListActivityModel extends FwActivityModelBase {
+public class CardListActivityModel extends BaseActivityModel {
 	private List<CardModel> mCardModelList;
 	private String mQueryText;
+
+	public CardListActivityModel(ModelLock parentLock) {
+		super(parentLock);
+	}
 
 	public List<CardModel> getCardModelList() {
 		return mCardModelList;

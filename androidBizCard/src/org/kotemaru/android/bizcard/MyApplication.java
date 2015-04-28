@@ -2,23 +2,22 @@ package org.kotemaru.android.bizcard;
 
 import org.kotemaru.android.bizcard.database.CardDb;
 import org.kotemaru.android.fw.FwActivity;
-import org.kotemaru.android.fw.FwApplicationBase;
+import org.kotemaru.android.fw.base.FwApplicationBase;
 import org.kotemaru.android.fw.thread.DefaultThreadManager;
 import org.kotemaru.android.fw.thread.ThreadManager;
 
 public class MyApplication extends FwApplicationBase<RootModel, FwActivity, RootController> {
 	private static MyApplication sInstance;
-
 	private CardDb mCardDb = new CardDb(this);
+
+	public static MyApplication getInstance() {
+		return sInstance;
+	}
 
 	@Override
 	public void onCreate() {
 		super.onCreate();
 		sInstance = this;
-	}
-
-	public static MyApplication getInstance() {
-		return sInstance;
 	}
 
 	@Override
